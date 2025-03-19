@@ -1,28 +1,51 @@
-voy ha hacer mi TFG sobre un SQLChatBot, donde el usuario podra preguntar algo a la base de datos en lenguaje natural y este bot lo traducira a consulta y ejecutara la consulta en la base de datos que el usuario desee.
-
-me han pedido que rellene estos apartados para que sepan sobre mi proyecto:
-La Propuesta de Proyecto es la síntesis del planteamiento del Proyecto Final que se va a desarrollar,
-expresada en forma de un documento. Es imprescindible aprobarla antes para poder desarrollar el Proyecto Final. La Propuesta de Proyecto se entregará al profesor responsable del seguimiento del proyecto integrado y deberá contener los siguientes epígrafes (su diseño es absolutamente libre):
-
-
-
 2. Título + subtítulo explicativo.
+Título: DataChat
+Subtítulo explicativo: Tu base de datos, ahora conversa contigo. Pregunta en lenguaje natural y obtén información al instante.
 
 3. Naturaleza del proyecto (personal o encargo profesional) y Área de desarrollo a la que se adscribe.
+Naturaleza del proyecto: Este proyecto es de desarrollo personal.
+Área de desarrollo: El proyecto se adscribe al área de Inteligencia Artificial y Desarrollo de Software, con un enfoque en el procesamiento de lenguaje natural (PLN) aplicado a bases de datos y la creación de interfaces de usuario interactivas.
 
-4. Definición. Se trata de una breve descripción, 10 líneas máximo, en la que se explique QUÉ se va a hacer (concretando el compromiso de producción), A QUIÉN va dirigido el proyecto, CÓMO se realizará y PARA QUÉ (qué finalidad o materialización tendrá).
+4. Definición.
+Este proyecto tiene como objetivo desarrollar un SQLChatBot, un asistente virtual que permite a los usuarios realizar consultas a una base de datos utilizando lenguaje natural. El usuario podrá hacer preguntas como "¿Cuántos productos hay en stock?" o "¿Cuáles son los empleados más antiguos?", y el bot traducirá esas preguntas en consultas SQL y ejecutará las consultas sobre la base de datos que el usuario elija. El proyecto se desarrollará utilizando tecnologías de procesamiento de lenguaje natural (PLN) y herramientas para la creación de interfaces conversacionales, como Python y NLTK. La finalidad del proyecto es facilitar la interacción con bases de datos de manera más intuitiva y accesible, permitiendo a usuarios sin conocimientos de SQL obtener respuestas rápidas a partir de consultas complejas.
 
-5. Selección 1-2 antecedentes + conclusiones. Quién ha hecho antes algo relacionado o semejante al proyecto que se presenta, dentro de la misma especialidad, y qué conclusiones se extraen para el trabajo (brevemente).
+5. Selección 1-2 antecedentes + conclusiones.
+Antecedentes:
 
-6. Selección 1-2 referentes + conclusiones. Autores, trabajos,… que sirvan como inspiración para el proyecto (desde un punto de vista conceptual, técnico, estético y/o funcional). Debe existir una vinculación evidente entre los referentes y el trabajo que se presenta, por eso se debe explicar qué interesa, en concreto, de cada uno de ellos.
+Chatbots para la interacción con bases de datos (Ejemplo: "SQLBot"): Varios proyectos han explorado la creación de chatbots que permiten la consulta de bases de datos a través de lenguaje natural. Estos bots, aunque funcionales, a menudo dependen de comandos predefinidos y tienen un alcance limitado. Conclusión: El desafío está en mejorar la capacidad del bot para comprender una mayor variedad de preguntas y poder ejecutarlas en diferentes sistemas de bases de datos.
 
-7. Aspectos técnicos. Exposición de las herramientas, materiales y software que se utilizarán para su desarrollo (en todas sus fases).
+Procesamiento de lenguaje natural para SQL (Ejemplo: "Text-to-SQL"): Existen investigaciones en PLN que permiten convertir preguntas en lenguaje natural a sentencias SQL. Sin embargo, los sistemas aún presentan desafíos en cuanto a la precisión y comprensión semántica, especialmente con preguntas complejas. Conclusión: Se debe avanzar en la interpretación semántica y la gestión de diferentes dialectos de SQL para hacer el sistema más robusto y eficiente.
 
-8. Temporalización (expresada en forma de Diagrama de Gantt, etc.), con las tareas detalladas a realizar por semanas.
+6. Selección 1-2 referentes + conclusiones.
+Referentes:
 
-9. Viabilidad presupuestaria. Primera aproximación al presupuesto con el objetivo de saber si es viable económicamente. Incluirá, como mínimo:
-     a. Nº de sesiones de trabajo.
+GPT-3 y GPT-4 para generación de texto en lenguaje natural: Los modelos de OpenAI, como GPT-3, han demostrado una capacidad impresionante para generar y comprender texto en lenguaje natural, y son utilizados en múltiples aplicaciones de chatbots. Conclusión: Utilizar un modelo de lenguaje avanzado como GPT-4 será clave para la precisión y flexibilidad del SQLChatBot en la interpretación de preguntas y la generación de consultas.
 
-     b. Gastos de producción estimados, incluyendo realización del producto final, si fuera necesario según especialidad.
+Text-to-SQL frameworks (como Text2SQL): Esta es una técnica que permite traducir preguntas de lenguaje natural a consultas SQL. Un referente sería el proyecto Text2SQL que emplea redes neuronales para realizar esta tarea. Conclusión: Inspirarse en estos frameworks ayudará a mejorar la parte técnica del proyecto, asegurando una mejor traducción de las preguntas al SQL adecuado.
 
-     c. Alquiler y/o amortización equipo de trabajo/herramientas (hardware, software, servicios web). Se calcula dividiendo el coste total del equipo por la vida útil (estimada) y multiplicando el resultado por los días de uso que necesites para realizar el proyecto.
+7. Aspectos técnicos.
+Lenguaje de programación: Python (por su robustez en procesamiento de texto y manejo de bases de datos).
+Librerías/Frameworks:
+Natural Language Toolkit (NLTK) o spaCy para el procesamiento de lenguaje natural.
+SQLAlchemy o pyodbc para la interacción con bases de datos.
+Transformers de Hugging Face (si se utiliza GPT-3/4) para aprovechar modelos preentrenados en PLN.
+Base de datos: El proyecto será compatible con bases de datos SQL como MySQL, PostgreSQL y SQLite.
+Interfaz de usuario: Se desarrollará una interfaz de línea de comandos o una interfaz web básica utilizando Flask para interactuar con el usuario.
+8. Temporalización (Diagrama de Gantt).
+Semana 1-2: Investigación y análisis de requisitos.
+Semana 3-4: Desarrollo de la infraestructura básica (conexión a bases de datos, configuración del entorno).
+Semana 5-7: Implementación del procesamiento de lenguaje natural (entrenamiento de modelos, pruebas).
+Semana 8-9: Integración del sistema de generación de consultas SQL a partir de lenguaje natural.
+Semana 10-11: Desarrollo de la interfaz de usuario.
+Semana 12: Pruebas y ajuste final del sistema.
+Semana 13: Preparación de documentación y presentación final.
+
+9. Viabilidad presupuestaria.
+a. Nº de sesiones de trabajo: Aproximadamente 20 sesiones de trabajo de 2-3 horas cada una.
+b. Gastos de producción estimados:
+
+Software: El proyecto utilizará principalmente herramientas open-source, por lo que los gastos serán mínimos en cuanto a licencias.
+Hardware: El proyecto no requiere hardware especializado, aunque se necesitará un equipo de trabajo con capacidades para procesamiento de datos (por ejemplo, un ordenador con buena CPU).
+c. Alquiler y/o amortización equipo de trabajo/herramientas:
+Suponiendo que ya se cuenta con un equipo adecuado, se estima un costo mensual de amortización de unos 50€ por el uso del hardware y software en función del tiempo que se utilice (aproximadamente 3 meses).
+Servicios web: Si se utiliza algún servicio cloud para el entrenamiento o la ejecución de modelos avanzados (como Hugging Face), el costo puede variar, pero podría ser de unos 20-30€/mes dependiendo del uso.
