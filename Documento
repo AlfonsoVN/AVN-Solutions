@@ -49,3 +49,71 @@ Hardware: El proyecto no requiere hardware especializado, aunque se necesitará 
 c. Alquiler y/o amortización equipo de trabajo/herramientas:
 Suponiendo que ya se cuenta con un equipo adecuado, se estima un costo mensual de amortización de unos 50€ por el uso del hardware y software en función del tiempo que se utilice (aproximadamente 3 meses).
 Servicios web: Si se utiliza algún servicio cloud para el entrenamiento o la ejecución de modelos avanzados (como Hugging Face), el costo puede variar, pero podría ser de unos 20-30€/mes dependiendo del uso.
+
+
+
+
+NATURALEZA DEL PROYECTO
+La aplicación a desarrollar será de uso profesional para las empresas de
+hostelería, con esta herramienta podrán conocer los costos asociados a sus
+productos y establecer márgenes de ganancias y precios.
+
+DEFINICIÓN
+Se realizará una aplicación web que permite registrar y gestionar los
+costos asociados al restaurante, incluyendo los gastos relacionados con
+materias primas y productos. Para ello, se empleará Spring Boot para el
+desarrollo del backend y Angular para el frontend. El propósito fundamental de
+este proyecto es proporcionar a los propietarios y administradores del sector
+hostelero una herramienta integral que les permita visualizar de manera clara y
+organizada los costos asociados al restaurante, facilitando así la toma de
+decisiones estratégicas.
+
+ANTECEDENTES
+En cuanto a antecedentes, personalmente no tengo conocimiento sobre
+proyectos previos que hayan desarrollado una aplicación similar a esta.
+
+REFERENTES
+Mi proyecto ha sido influenciado por una herramienta desarrollada en
+Excel que se destaca por su utilidad en el cálculo preciso de los costos
+asociados al funcionamiento de un restaurante. Esta herramienta abarca
+diversos aspectos, incluyendo el análisis de materias primas, la mano de obra,
+así como los costos directos e indirectos. Además, ofrece funcionalidades para
+el cálculo de precios, facilitando la gestión financiera del negocio. La elección
+de esta referencia se fundamenta en su enfoque integral y su capacidad para
+abordar aspectos cruciales de la gestión restaurantera, lo cual busca replicar
+nuestro proyecto.
+
+ASPECTOS TÉCNICOS
+En la fase de desarrollo se utilizará
+ Backend
+- Servicio API Rest que gestiona las solicitudes y respuestas
+realizadas por el cliente.
+- Spring Boot: Utilizado como el framework principal para el
+desarrollo del backend, proporcionando una estructura
+sólida y eficiente.
+- Java 17: Lenguaje de programación utilizado para la
+implementación de la lógica de negocio y la interacción
+con la base de datos.
+- Lombok: Herramienta que simplifica y agiliza el desarrollo al
+reducir la cantidad de código boilerplate.
+- Spring Security: Utilizado para la gestión de la seguridad
+y la autenticación dentro de la aplicación.
+- PostgreSQL: Sistema de gestión de bases de datos
+relacional, seleccionado por su robustez y escalabilidad.
+
+ Frontend
+- Angular: Framework utilizado para la creación del frontend
+de la aplicación web, ofreciendo una estructura modular y
+mantenible.
+- PrimeNG: Biblioteca de componentes de interfaz de usuario
+basada en Angular, que proporciona una amplia gama de
+componentes predefinidos y personalizables.
+
+- Despliegue
+- Docker: Utilizado para la creación, implementación y
+ejecución de contenedores que encapsulan la
+aplicación y sus dependencias, garantizando un
+despliegue consistente y portátil.
+- Heroku: Plataforma en la nube utilizada para el
+despliegue y la puesta en producción de la aplicación,
+ofreciendo escalabilidad y facilidad de gestión.
