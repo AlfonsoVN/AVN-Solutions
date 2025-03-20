@@ -31,6 +31,7 @@ SQLAlchemy o pyodbc para la interacción con bases de datos.
 Transformers de Hugging Face (si se utiliza GPT-3/4) para aprovechar modelos preentrenados en PLN.
 Base de datos: El proyecto será compatible con bases de datos SQL como MySQL, PostgreSQL y SQLite.
 Interfaz de usuario: Se desarrollará una interfaz de línea de comandos o una interfaz web básica utilizando Flask para interactuar con el usuario.
+
 8. Temporalización (Diagrama de Gantt).
 Semana 1-2: Investigación y análisis de requisitos.
 Semana 3-4: Desarrollo de la infraestructura básica (conexión a bases de datos, configuración del entorno).
@@ -41,105 +42,9 @@ Semana 12: Pruebas y ajuste final del sistema.
 Semana 13: Preparación de documentación y presentación final.
 
 9. Viabilidad presupuestaria.
-a. Nº de sesiones de trabajo: Aproximadamente 20 sesiones de trabajo de 2-3 horas cada una.
-b. Gastos de producción estimados:
-
-Software: El proyecto utilizará principalmente herramientas open-source, por lo que los gastos serán mínimos en cuanto a licencias.
-Hardware: El proyecto no requiere hardware especializado, aunque se necesitará un equipo de trabajo con capacidades para procesamiento de datos (por ejemplo, un ordenador con buena CPU).
-c. Alquiler y/o amortización equipo de trabajo/herramientas:
-Suponiendo que ya se cuenta con un equipo adecuado, se estima un costo mensual de amortización de unos 50€ por el uso del hardware y software en función del tiempo que se utilice (aproximadamente 3 meses).
-Servicios web: Si se utiliza algún servicio cloud para el entrenamiento o la ejecución de modelos avanzados (como Hugging Face), el costo puede variar, pero podría ser de unos 20-30€/mes dependiendo del uso.
-
-
-
-
-NATURALEZA DEL PROYECTO
-La aplicación a desarrollar será de uso profesional para las empresas de
-hostelería, con esta herramienta podrán conocer los costos asociados a sus
-productos y establecer márgenes de ganancias y precios.
-
-DEFINICIÓN
-Se realizará una aplicación web que permite registrar y gestionar los
-costos asociados al restaurante, incluyendo los gastos relacionados con
-materias primas y productos. Para ello, se empleará Spring Boot para el
-desarrollo del backend y Angular para el frontend. El propósito fundamental de
-este proyecto es proporcionar a los propietarios y administradores del sector
-hostelero una herramienta integral que les permita visualizar de manera clara y
-organizada los costos asociados al restaurante, facilitando así la toma de
-decisiones estratégicas.
-
-ANTECEDENTES
-En cuanto a antecedentes, personalmente no tengo conocimiento sobre
-proyectos previos que hayan desarrollado una aplicación similar a esta.
-
-REFERENTES
-Mi proyecto ha sido influenciado por una herramienta desarrollada en
-Excel que se destaca por su utilidad en el cálculo preciso de los costos
-asociados al funcionamiento de un restaurante. Esta herramienta abarca
-diversos aspectos, incluyendo el análisis de materias primas, la mano de obra,
-así como los costos directos e indirectos. Además, ofrece funcionalidades para
-el cálculo de precios, facilitando la gestión financiera del negocio. La elección
-de esta referencia se fundamenta en su enfoque integral y su capacidad para
-abordar aspectos cruciales de la gestión restaurantera, lo cual busca replicar
-nuestro proyecto.
-
-ASPECTOS TÉCNICOS
-En la fase de desarrollo se utilizará
- Backend
-- Servicio API Rest que gestiona las solicitudes y respuestas
-realizadas por el cliente.
-- Spring Boot: Utilizado como el framework principal para el
-desarrollo del backend, proporcionando una estructura
-sólida y eficiente.
-- Java 17: Lenguaje de programación utilizado para la
-implementación de la lógica de negocio y la interacción
-con la base de datos.
-- Lombok: Herramienta que simplifica y agiliza el desarrollo al
-reducir la cantidad de código boilerplate.
-- Spring Security: Utilizado para la gestión de la seguridad
-y la autenticación dentro de la aplicación.
-- PostgreSQL: Sistema de gestión de bases de datos
-relacional, seleccionado por su robustez y escalabilidad.
-
- Frontend
-- Angular: Framework utilizado para la creación del frontend
-de la aplicación web, ofreciendo una estructura modular y
-mantenible.
-- PrimeNG: Biblioteca de componentes de interfaz de usuario
-basada en Angular, que proporciona una amplia gama de
-componentes predefinidos y personalizables.
-
-- Despliegue
-- Docker: Utilizado para la creación, implementación y
-ejecución de contenedores que encapsulan la
-aplicación y sus dependencias, garantizando un
-despliegue consistente y portátil.
-- Heroku: Plataforma en la nube utilizada para el
-despliegue y la puesta en producción de la aplicación,
-ofreciendo escalabilidad y facilidad de gestión.
-
-
-
-
-
-
-
-Naturaleza del proyecto (personal o encargo profesional) y Área de desarrollo a la que se adscribe.
-
-4. Definición. Se trata de una breve descripción, 10 líneas máximo, en la que se explique QUÉ se va a hacer (concretando el compromiso de producción), A QUIÉN va dirigido el proyecto, CÓMO se realizará y PARA QUÉ (qué finalidad o materialización tendrá).
-
-5. Selección 1-2 antecedentes + conclusiones. Quién ha hecho antes algo relacionado o semejante al proyecto que se presenta, dentro de la misma especialidad, y qué conclusiones se extraen para el trabajo (brevemente).
-
-6. Selección 1-2 referentes + conclusiones. Autores, trabajos,… que sirvan como inspiración para el proyecto (desde un punto de vista conceptual, técnico, estético y/o funcional). Debe existir una vinculación evidente entre los referentes y el trabajo que se presenta, por eso se debe explicar qué interesa, en concreto, de cada uno de ellos.
-
-7. Aspectos técnicos. Exposición de las herramientas, materiales y software que se utilizarán para su desarrollo (en todas sus fases).
-
-8. Temporalización (expresada en forma de Diagrama de Gantt, etc.), con las tareas detalladas a realizar por semanas.
-
-9. Viabilidad presupuestaria. Primera aproximación al presupuesto con el objetivo de saber si es viable económicamente. Incluirá, como mínimo:
-     a. Nº de sesiones de trabajo.
-
-     b. Gastos de producción estimados, incluyendo realización del producto final, si fuera necesario según especialidad.
-
-     c. Alquiler y/o amortización equipo de trabajo/herramientas (hardware, software, servicios web). Se calcula dividiendo el coste total del equipo por la vida útil (estimada) y multiplicando el resultado por los días de uso que necesites para realizar el proyecto.
-
+Nº de sesiones de trabajo: Aproximadamente 12 semanas con trabajo diario.
+Costes estimados:
+API deGroq: Coste gratuito.
+Teniendo en cuenta lo que cobra un desarrollador que acaba de empezar, unos 300€ por semana.
+Lo que seria un total de 3600€.
+Equipos y herramientas: Los costos se calcularán en función del tiempo de uso y la vida útil del hardware y software necesario.
