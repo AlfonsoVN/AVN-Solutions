@@ -2,35 +2,34 @@
 Título: DataChat
 Subtítulo explicativo: Tu base de datos, ahora conversa contigo. Pregunta en lenguaje natural y obtén información al instante.
 
-3. Naturaleza del proyecto (personal o encargo profesional) y Área de desarrollo a la que se adscribe.
-Naturaleza del proyecto: Este proyecto es de desarrollo personal.
-Área de desarrollo: El proyecto se adscribe al área de Inteligencia Artificial y Desarrollo de Software, con un enfoque en el procesamiento de lenguaje natural (PLN) aplicado a bases de datos y la creación de interfaces de usuario interactivas.
+3. NATURALEZA DEL PROYECTO Y ÁREA DE DESARROLLO
+DataChat es un proyecto que estoy desarrollando como parte de mi formación y crecimiento en el área de desarrollo de software. Se enfoca en la automatización de consultas SQL usando lenguaje natural, lo que lo hace útil para empresas y personas que trabajan con bases de datos, pero sin conocimientos avanzados en SQL.
 
-4. Definición.
-Este proyecto tiene como objetivo desarrollar un SQLChatBot, un asistente virtual que permite a los usuarios realizar consultas a una base de datos utilizando lenguaje natural. El usuario podrá hacer preguntas como "¿Cuántos productos hay en stock?" o "¿Cuáles son los empleados más antiguos?", y el bot traducirá esas preguntas en consultas SQL y ejecutará las consultas sobre la base de datos que el usuario elija. El proyecto se desarrollará utilizando tecnologías de procesamiento de lenguaje natural (PLN) y herramientas para la creación de interfaces conversacionales, como Python y NLTK. La finalidad del proyecto es facilitar la interacción con bases de datos de manera más intuitiva y accesible, permitiendo a usuarios sin conocimientos de SQL obtener respuestas rápidas a partir de consultas complejas.
+4. DEFINICIÓN
+DataChat es una aplicación web que permite a cualquier usuario consultar su base de datos con preguntas en lenguaje natural, sin necesidad de escribir código SQL. Está pensada principalmente para empresas y profesionales que manejan bases de datos, pero no tienen conocimientos técnicos. Para su desarrollo, voy a usar Django en el backend y Angular en el frontend, además de integrar modelos de IA que traduzcan el lenguaje natural a SQL. El objetivo principal es facilitar la consulta de datos y mejorar la eficiencia en la toma de decisiones.
 
-5. Selección 1-2 antecedentes + conclusiones.
-Antecedentes:
+5. SELECCIÓN DE ANTECEDENTES Y CONCLUSIONES
+Algunas herramientas como los chatbots empresariales y plataformas de Business Intelligence han explorado la generación automática de consultas SQL, pero suelen ser complicadas de configurar o no muy intuitivas. DataChat se diferencia al centrarse en la simplicidad y accesibilidad, ofreciendo una solución más fácil de usar y sin requerir conocimientos previos en SQL.
 
-Chatbots para la interacción con bases de datos (Ejemplo: "SQLBot"): Varios proyectos han explorado la creación de chatbots que permiten la consulta de bases de datos a través de lenguaje natural. Estos bots, aunque funcionales, a menudo dependen de comandos predefinidos y tienen un alcance limitado. Conclusión: El desafío está en mejorar la capacidad del bot para comprender una mayor variedad de preguntas y poder ejecutarlas en diferentes sistemas de bases de datos.
+6. SELECCIÓN DE REFERENTES Y CONCLUSIONES
 
-Procesamiento de lenguaje natural para SQL (Ejemplo: "Text-to-SQL"): Existen investigaciones en PLN que permiten convertir preguntas en lenguaje natural a sentencias SQL. Sin embargo, los sistemas aún presentan desafíos en cuanto a la precisión y comprensión semántica, especialmente con preguntas complejas. Conclusión: Se debe avanzar en la interpretación semántica y la gestión de diferentes dialectos de SQL para hacer el sistema más robusto y eficiente.
-
-6. Selección 1-2 referentes + conclusiones.
-Referentes:
-
-GPT-3 y GPT-4 para generación de texto en lenguaje natural: Los modelos de OpenAI, como GPT-3, han demostrado una capacidad impresionante para generar y comprender texto en lenguaje natural, y son utilizados en múltiples aplicaciones de chatbots. Conclusión: Utilizar un modelo de lenguaje avanzado como GPT-4 será clave para la precisión y flexibilidad del SQLChatBot en la interpretación de preguntas y la generación de consultas.
-
-Text-to-SQL frameworks (como Text2SQL): Esta es una técnica que permite traducir preguntas de lenguaje natural a consultas SQL. Un referente sería el proyecto Text2SQL que emplea redes neuronales para realizar esta tarea. Conclusión: Inspirarse en estos frameworks ayudará a mejorar la parte técnica del proyecto, asegurando una mejor traducción de las preguntas al SQL adecuado.
+GPT-4 y Groq: Modelos de IA que permiten procesar lenguaje natural y convertirlo en consultas SQL de manera precisa.
+Paginas web como la de Chatgpt y Copilot.
+La inspiración principal viene de la inteligencia artificial aplicada a bases de datos y la facilidad de uso de herramientas de análisis, combinando ambos conceptos para hacer que consultar información sea rápido y accesible.
 
 7. Aspectos técnicos.
-Lenguaje de programación: Python (por su robustez en procesamiento de texto y manejo de bases de datos).
-Librerías/Frameworks:
-Natural Language Toolkit (NLTK) o spaCy para el procesamiento de lenguaje natural.
-SQLAlchemy o pyodbc para la interacción con bases de datos.
-Transformers de Hugging Face (si se utiliza GPT-3/4) para aprovechar modelos preentrenados en PLN.
-Base de datos: El proyecto será compatible con bases de datos SQL como MySQL, PostgreSQL y SQLite.
-Interfaz de usuario: Se desarrollará una interfaz de línea de comandos o una interfaz web básica utilizando Flask para interactuar con el usuario.
+Backend:
+Django para gestionar el servidor y la lógica del negocio.
+MySQL como base de datos relacional.
+Django REST Framework para construir la API.
+Groq para convertir preguntas en lenguaje natural a SQL.
+
+Frontend:
+Angular como framework principal para la interfaz de usuario.
+
+Despliegue:
+Docker para contenerizar la aplicación y facilitar su ejecución en distintos entornos.
+GitHub para la integración y entrega continua (CI/CD).
 
 8. Temporalización (Diagrama de Gantt).
 Semana 1-2: Investigación y análisis de requisitos.
