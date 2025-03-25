@@ -132,6 +132,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',  # La URL de tu frontend
+    "http://localhost:4200",  # Si tu frontend de Angular está en ese puerto
+    "http://127.0.0.1:4200",  # También se puede probar con esta URL
 ]
 
+
+CSRF_COOKIE_NAME = "csrftoken"
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
+CSRF_HEADER_NAME = "X-CSRFToken"
+
+# Seguridad en cookies de sesión
+SESSION_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS

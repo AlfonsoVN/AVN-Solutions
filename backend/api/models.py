@@ -1,4 +1,5 @@
 # models.py
+
 from django.db import models
 
 class Conexion(models.Model):
