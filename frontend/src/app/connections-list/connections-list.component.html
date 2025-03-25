@@ -1,0 +1,9 @@
+<div>
+    <h2>Lista de Conexiones</h2>
+    <ul>
+      <li *ngFor="let connection of connections">
+        {{ connection.name }} - {{ connection.host }}:{{ connection.port }}
+      </li>
+    </ul>
+  </div>
+  
