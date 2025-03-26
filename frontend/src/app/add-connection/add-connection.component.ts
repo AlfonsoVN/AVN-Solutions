@@ -30,6 +30,9 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
 
   comprobarConexion() {
     if (this.conexionForm.valid) {
+      const headers = { 'Content-Type': 'application/json' };
+      console.log(this.conexionForm.value);
+      
       this.http.post<{ exito: boolean }>(this.apiUrl, this.conexionForm.value).subscribe({
         next: (response) => {
           if (response.exito) {
@@ -48,6 +51,30 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
   }
 
   anadirConexion() {
-    // Lógica para añadir la conexión al backend
+    if (this.conexionForm.valid) {
+      const headers = { 'Content-Type': 'application/json' };
+  
+      this.http.post<{ exito: boolean, mensaje?: string }>(
+        'http://localhost:8000/api/anadir_conexion/',
+        JSON.stringify(this.conexionForm.value), // Convertimos a JSON
+        { headers }
+      ).subscribe({
+        next: (response) => {
+          if (response.exito) {
+            alert('Conexión añadida correctamente');
+            this.conexionForm.reset();
+          } else {
+            alert('Error al añadir conexión: ' + (response.mensaje || 'Desconocido'));
+          }
+        },
+        error: (err) => {
+          alert('Error en la solicitud: ' + err.message);
+        },
+      });
+    } else {
+      alert('Por favor, complete todos los campos antes de añadir la conexión.');
+    }
   }
+  
+
 }
