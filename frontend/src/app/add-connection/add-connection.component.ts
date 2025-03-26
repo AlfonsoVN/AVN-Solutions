@@ -14,15 +14,17 @@ import { ReactiveFormsModule } from '@angular/forms';
 })
 export class AddConnectionComponent {  // Cambiado el nombre de la clase
   conexionForm: FormGroup;
-  apiUrl = 'http://localhost:8000/api/comprobar_conexion/'; // Endpoint de Django
+  apiUrl = 'http://localhost:8000/api/test_connection/'; // Endpoint de Django
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.conexionForm = this.fb.group({
+      name: ['', Validators.required],
       host: ['', Validators.required],
-      puerto: ['', Validators.required],
+      db_type: ['', Validators.required],
+      port: ['', Validators.required],
       dbname: ['', Validators.required],
-      usuario: ['', Validators.required],
-      contrasena: ['', Validators.required],
+      user: ['', Validators.required],
+      password: ['', Validators.required],
     });
   }
 

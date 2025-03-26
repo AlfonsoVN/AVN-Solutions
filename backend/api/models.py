@@ -3,12 +3,13 @@
 from django.db import models
 
 class Conexion(models.Model):
-    nombre = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     host = models.CharField(max_length=255)
-    puerto = models.IntegerField()
+    db_type = models.CharField(max_length=255)
+    port = models.IntegerField()
     dbname = models.CharField(max_length=255)
-    usuario = models.CharField(max_length=255)
-    contrasena = models.CharField(max_length=255)
+    user = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.nombre
+        return self.name

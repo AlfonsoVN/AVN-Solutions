@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Prueba de Conexión</title>
+    
+  </head>
+  <body >
+    
+    <main>
+      <div class="aux">
+        <div class="container">
+          <h1>Prueba de Conexión a la Base de Datos</h1>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %} {{ form.as_p }}
+
+            <div class="archivo">
+              <p>File:
+              <button type="button" id="upload-button">
+                Seleccionar archivo
+              </button></p>
+              <p>Archivo para Info Adicional:
+              <button type="button" id="info_adicional-button">
+                Seleccionar archivo
+              </button></p>
+              <input type="file" id="file-input" style="display: none" />
+            </div>
+
+            <p>
+              *Añade la informacion que consideres necesaria que la IA deba
+              conocer (nombre del schema, relacion entre nombre de tablas en
+              BBDD vs nombre real, etc)
+            </p>
+            <p>**Si desea adjuntar archivos, hagalo tras probar la conexión.</p>
+            <button id="test" type="submit" name="action" value="test">
+              Probar Conexión
+            </button>
+            {% if success %}
+            <script>
+              document.getElementById("test").style.display = "None";
+            </script>
+            <p class="exito">
+              Conexión exitosa a la base de datos.Por seguridad, vuelva
+              introducir la contraseña
+            </p>
+            <button type="submit" name="action" value="save">
+              Guardar Conexión
+            </button>
+            {% elif error %}
+            <p class="error">Error al conectar: {{ error }}</p>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </main>
+    
+    <script>
+      // Función para habilitar o deshabilitar campos en función del tipo de base de datos
+      function toggleFields() {
+        const dbTypeField = document.getElementById("id_db_type"); // Asegúrate de que este ID coincida con el que genera Django
+        const hostField = document.getElementById("id_host");
+        const portField = document.getElementById("id_port");
+        const userField = document.getElementById("id_user");
+        const passwordField = document.getElementById("id_passwd");
+
+        // Si el tipo de base de datos es SQLite
+        if (dbTypeField.value === "sqlite") {
+          hostField.disabled = true;
+          portField.disabled = true;
+          userField.disabled = true;
+          passwordField.disabled = true;
+        } else {
+          // Habilitar todos los campos si no es SQLite
+          hostField.disabled = false;
+          portField.disabled = false;
+          userField.disabled = false;
+          passwordField.disabled = false;
+        }
+      }
+      // Llama a la función al cargar la página
+      document.addEventListener("DOMContentLoaded", function () {
+        toggleFields(); // Estado inicial
+        document
+          .getElementById("id_db_type")
+          .addEventListener("change", toggleFields); // Evento para cambio
+      });
+
+      document
+        .getElementById("upload-button")
+        .addEventListener("click", function () {
+          document.getElementById("id_file").click();
+        });
+
+      document
+        .getElementById("id_file")
+        .addEventListener("change", function () {
+          document.getElementById("upload-button").innerText =
+            this.files[0].name;
+        });
+
+      // Variable para almacenar el archivo
+      let archivoSeleccionado;
+
+      // Referencias a los elementos del DOM
+      const botonSeleccionar = document.getElementById("info_adicional-button");
+      const inputArchivo = document.getElementById("file-input");
+
+      // Función para manejar el clic en el botón
+      botonSeleccionar.addEventListener("click", () => {
+        // Abrir el selector de archivos
+        inputArchivo.click();
+      });
+
+      // Función para manejar la selección del archivo
+      inputArchivo.addEventListener("change", (event) => {
+        // Verificar si se seleccionó un archivo
+        if (event.target.files.length > 0) {
+          // Guardar el archivo en la variable
+          archivoSeleccionado = event.target.files[0];
+
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const contenido = e.target.result;
+
+            // Asignar el contenido del archivo al textarea
+            document.getElementById("id_consultas_alm").value += contenido+"\n";
+          };
+          reader.readAsText(archivoSeleccionado); // Leer como texto
+        }
+      });
+
+      document
+        .getElementById("file-input")
+        .addEventListener("change", function () {
+          document.getElementById("info_adicional-button").innerText =
+            this.files[0].name;
+        });
+    </script>
+  </body>
+</html>

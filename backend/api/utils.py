@@ -2,12 +2,13 @@
 
 from sqlalchemy import create_engine
 
-def probar_conexion(db_url):
-    try:
-        engine = create_engine(db_url)
-        with engine.connect() as connection:
-            connection.execute("SELECT 1")
-        return True
-    except Exception as e:
-        print(f"Error de conexión: {e}")
-        return False
+def obtener_conexion(connection):
+    if connection.db_type =="mysql" or connection.db_type=="postgresql":
+        db_url = f"{connection.db_type}://{connection.user}:{connection.password}@{connection.host}:{connection.port}/{connection.dbname}"
+    if connection.db_type=="sqlite":
+        db_url=f"{connection.db_type}:///{connection.dbname}"
+        
+    if connection.db_type !="mysql" and connection.db_type!="postgresql" and connection.db_type!="sqlite":
+        db_url = f"{connection.db_type}://{connection.user}:{connection.password}@{connection.host}:{connection.port}/{connection.dbname}"
+        
+    return db_url

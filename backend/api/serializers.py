@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import DatabaseConnection
+from .models import Conexion
 
-class DatabaseConnectionSerializer(serializers.ModelSerializer):
+class ConexionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DatabaseConnection
+        model = Conexion
         fields = '__all__'
