@@ -79,7 +79,7 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
     } else {
       alert('Por favor, complete todos los campos antes de añadir la conexión.');
     }
-  }
+}
   
 
 }

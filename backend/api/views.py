@@ -4,6 +4,7 @@ import json
 import os
 import random
 from django.conf import settings
+from django.db import IntegrityError
 from sqlalchemy.exc import OperationalError
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -27,6 +28,42 @@ def api_root(request):
         'añadir_conexion': 'http://127.0.0.1:8000/api/anadir_conexion/',
     })
 
+
+@api_view(['GET'])
+def get_connections(request):
+    # Obtener todas las conexiones de la base de datos
+    conexiones = Conexion.objects.all()
+    
+    # Serializamos los datos
+    serializer = ConexionSerializer(conexiones, many=True)
+    
+    # Devolvemos la lista de conexiones en formato JSON
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+def delete_connection(request, pk):
+    try:
+        # Intentamos obtener la conexión por su id (pk)
+        conexion = Conexion.objects.get(pk=pk)
+        conexion.delete()  # Eliminar la conexión
+        return Response({"mensaje": "Conexión eliminada correctamente"}, status=status.HTTP_204_NO_CONTENT)
+    except Conexion.DoesNotExist:
+        return Response({"mensaje": "Conexión no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['PUT'])
+def edit_connection(request, pk):
+    try:
+        connection = Conexion.objects.get(pk=pk)
+    except Conexion.DoesNotExist:
+        return Response({'mensaje': 'Conexión no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ConexionSerializer(connection, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'mensaje': 'Conexión actualizada correctamente'}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 @api_view(['POST'])  # Asegura que solo acepte POST
 def test_connection(request):
@@ -80,6 +117,20 @@ def anadir_conexion(request):
 
         data = json.loads(request.body.decode('utf-8'))  # Leer JSON desde request.body
 
+        conexion_existente = Conexion.objects.filter(
+            name=data.get('name'),
+            host=data.get('host'),
+            db_type=data.get('db_type'),
+            dbname=data.get('dbname'),
+            user=data.get('user'),
+            port=data.get('port'),
+            password=data.get('password'),
+        ).first()
+
+        # Si la conexión ya existe, retornar un error
+        if conexion_existente:
+            return JsonResponse({'exito': False, 'mensaje': 'Ya existe una conexión con estos parámetros.'}, status=400)
+
         nueva_conexion = Conexion.objects.create(
             name=data.get('name'),
             host=data.get('host'),
@@ -92,5 +143,10 @@ def anadir_conexion(request):
 
         return JsonResponse({'exito': True})
 
+    except IntegrityError as e:
+        # Si hay un error de integridad, devolver el error
+        return JsonResponse({'exito': False, 'mensaje': str(e)}, status=400)
+
     except Exception as e:
+        # Cualquier otro error
         return JsonResponse({'exito': False, 'mensaje': str(e)}, status=400)

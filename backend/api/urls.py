@@ -8,5 +8,8 @@ urlpatterns = [
     path('test_connection/', test_connection, name='test_connection'),  # Ruta para la vista test_connection
     path('obtener_conexion/', obtener_conexion, name='obtener_conexion'),
     path('anadir_conexion/', anadir_conexion, name='anadir_conexion'),
+    path('get-connections/', views.get_connections, name='get_connections'),
+    path('delete-connection/<int:pk>/', views.delete_connection, name='delete_connection'),
+    path('edit-connection/<int:pk>/', views.edit_connection, name='edit_connection')
 ]
 

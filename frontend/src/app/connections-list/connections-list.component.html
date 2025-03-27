@@ -1,9 +1,56 @@
-<div>
-    <h2>Lista de Conexiones</h2>
-    <ul>
-      <li *ngFor="let connection of connections">
-        {{ connection.name }} - {{ connection.host }}:{{ connection.port }}
-      </li>
-    </ul>
+<!-- connections-list.component.html -->
+<div class="connections-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Host</th>
+        <th>DB Type</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let connection of connections">
+        <td>{{ connection.name }}</td>
+        <td>{{ connection.host }}</td>
+        <td>{{ connection.db_type }}</td>
+        <td>
+          <button (click)="openEditModal(connection)">Editar</button>
+          <button (click)="deleteConnection(connection.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal" *ngIf="isEditModalOpen">
+  <div class="modal-content">
+    <h2>Editar Conexión</h2>
+    <form (ngSubmit)="editConnection()">
+      <label for="name">Name:</label>
+      <input id="name" [(ngModel)]="editConnectionData.name" name="name" required />
+
+      <label for="host">Host:</label>
+      <input id="host" [(ngModel)]="editConnectionData.host" name="host" required />
+
+      <label for="db_type">DB Type:</label>
+      <input id="db_type" [(ngModel)]="editConnectionData.db_type" name="db_type" required />
+
+      <label for="port">Port:</label>
+      <input id="port" [(ngModel)]="editConnectionData.port" name="port" required />
+
+      <label for="dbname">Base de Datos:</label>
+      <input id="dbname" [(ngModel)]="editConnectionData.dbname" name="dbname" required />
+
+      <label for="user">User:</label>
+      <input id="user" [(ngModel)]="editConnectionData.user" name="user" required />
+
+      <label for="password">Password:</label>
+      <input id="password" [(ngModel)]="editConnectionData.password" name="password" type="password" required />
+
+      <button type="submit">Guardar cambios</button>
+      <button type="button" (click)="closeEditModal()">Cancelar</button>
+    </form>
   </div>
-  
+</div>
