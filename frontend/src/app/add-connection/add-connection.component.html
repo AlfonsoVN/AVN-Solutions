@@ -23,7 +23,7 @@
       <input id="password" type="password" formControlName="password" />
   
       <button type="button" (click)="comprobarConexion()">Comprobar Conexión</button>
-      <button type="button" (click)="anadirConexion()" *ngIf="conexionForm.valid">Añadir Conexión</button>
+      <button type="button" (click)="anadirConexion()" *ngIf="connectionSuccessful">Añadir Conexión</button>
     </form>
   </div>
   

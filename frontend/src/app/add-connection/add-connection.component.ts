@@ -15,6 +15,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 export class AddConnectionComponent {  // Cambiado el nombre de la clase
   conexionForm: FormGroup;
   apiUrl = 'http://localhost:8000/api/test_connection/'; // Endpoint de Django
+  connectionSuccessful: boolean = false;
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.conexionForm = this.fb.group({
@@ -37,12 +38,15 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
         next: (response) => {
           if (response.exito) {
             alert('Conexión exitosa');
+            this.connectionSuccessful = true;  // Se marca como exitosa
           } else {
             alert('Error al conectar');
+            this.connectionSuccessful = false;  // En caso de error
           }
         },
         error: (err) => {
           alert('Error en la solicitud: ' + err.message);
+          this.connectionSuccessful = false;  // En caso de error en la solicitud
         },
       });
     } else {
@@ -51,7 +55,7 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
   }
 
   anadirConexion() {
-    if (this.conexionForm.valid) {
+    if (this.conexionForm.valid && this.connectionSuccessful) {
       const headers = { 'Content-Type': 'application/json' };
   
       this.http.post<{ exito: boolean, mensaje?: string }>(
@@ -63,6 +67,7 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
           if (response.exito) {
             alert('Conexión añadida correctamente');
             this.conexionForm.reset();
+            this.connectionSuccessful = false;  // Reiniciar el estado
           } else {
             alert('Error al añadir conexión: ' + (response.mensaje || 'Desconocido'));
           }
