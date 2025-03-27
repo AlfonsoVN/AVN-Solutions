@@ -58,7 +58,7 @@ def test_connection(request):
             
         # Intentar conectarse y verificar la conexión
         with engine.connect() as connection:
-            connection.execute('SELECT 1')  # Esto es solo una consulta simple para comprobar la conexión        
+            connection.execute(text('SELECT 1'))  # Esto es solo una consulta simple para comprobar la conexión        
         return JsonResponse({'exito': True, 'mensaje': 'Conexión exitosa'})
     
     except OperationalError as e:
