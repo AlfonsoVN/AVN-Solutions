@@ -1,1 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+body, html {
+    margin: 0;
+    padding: 0;
+  }
+
+.main-content {
+    margin-top: 60px; /* Ajusta según la altura de tu navbar */
+    padding: 20px; /* Opcional para dar algo de espacio */
+  }

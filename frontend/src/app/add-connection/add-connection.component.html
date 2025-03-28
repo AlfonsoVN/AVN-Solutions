@@ -1,29 +1,30 @@
 <!-- conexion-form.component.html -->
-<div class="form-container">
-    <form [formGroup]="conexionForm">
-      <label for="name">Name</label>
-      <input id="name" formControlName="name" />
-  
-      <label for="host">Host</label>
-      <input id="host" formControlName="host" />
+<div class="main-content">
+  <div class="form-container">
+      <form [formGroup]="conexionForm">
+        <label for="name">Name</label>
+        <input id="name" formControlName="name" />
+    
+        <label for="host">Host</label>
+        <input id="host" formControlName="host" />
 
-      <label for="db_type">Db_type</label>
-      <input id="db_type" formControlName="db_type" />
-  
-      <label for="port">Port</label>
-      <input id="port" formControlName="port" />
-  
-      <label for="dbname">Base de Datos</label>
-      <input id="dbname" formControlName="dbname" />
-  
-      <label for="user">User</label>
-      <input id="user" formControlName="user" />
-  
-      <label for="password">Password</label>
-      <input id="password" type="password" formControlName="password" />
-  
-      <button type="button" (click)="comprobarConexion()">Comprobar Conexión</button>
-      <button type="button" (click)="anadirConexion()" *ngIf="connectionSuccessful">Añadir Conexión</button>
-    </form>
+        <label for="db_type">Db_type</label>
+        <input id="db_type" formControlName="db_type" />
+    
+        <label for="port">Port</label>
+        <input id="port" formControlName="port" />
+    
+        <label for="dbname">Base de Datos</label>
+        <input id="dbname" formControlName="dbname" />
+    
+        <label for="user">User</label>
+        <input id="user" formControlName="user" />
+    
+        <label for="password">Password</label>
+        <input id="password" type="password" formControlName="password" />
+    
+        <button type="button" (click)="comprobarConexion()">Comprobar Conexión</button>
+        <button type="button" (click)="anadirConexion()" *ngIf="connectionSuccessful">Añadir Conexión</button>
+      </form>
   </div>
-  
+</div>
