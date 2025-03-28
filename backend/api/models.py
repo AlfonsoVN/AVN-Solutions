@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.hashers import make_password
 
 class Conexion(models.Model):
     name = models.CharField(max_length=255)
@@ -47,3 +48,6 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)

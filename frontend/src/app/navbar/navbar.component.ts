@@ -1,49 +1,54 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';  // Este es el módulo necesario para ngClass
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
-  standalone: true,
+  standalone: true,  // Este es un componente standalone
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
-  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],  // Asegúrate de incluir CommonModule aquí
 })
 export class NavbarComponent {
-    // Variable para controlar si el modal está abierto
-  isModalOpen: boolean = false;
-
-  // Datos del formulario
-  userData = {
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  };
-
-  // Método para abrir el modal
-  openLoginModal() {
-    this.isModalOpen = true;
-  }
-
-  // Método para cerrar el modal
-  closeLoginModal() {
-    this.isModalOpen = false;
-  }
-
-  // Método para manejar la creación de usuario (por ejemplo, haciendo una solicitud HTTP)
-  registerUser() {
-    if (this.userData.password !== this.userData.confirmPassword) {
-      alert('Las contraseñas no coinciden.');
-      return;
+    isModalOpen: boolean = false;
+    userData = {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    };
+  
+    constructor(private http: HttpClient, private router: Router) {}
+  
+    openLoginModal() {
+      this.isModalOpen = true;
     }
-
-    // Aquí iría la lógica para enviar los datos al backend y registrar al usuario
-    console.log('Usuario registrado:', this.userData);
-
-    // Después de registrar al usuario, cerramos el modal
-    this.closeLoginModal();
-  }
+  
+    closeLoginModal() {
+      this.isModalOpen = false;
+    }
+  
+    registerUser() {
+      if (this.userData.password !== this.userData.confirmPassword) {
+        alert('Las contraseñas no coinciden.');
+        return;
+      }
+  
+      // Llamada HTTP para registrar al usuario
+      this.http.post('http://localhost:8000/api/register/', this.userData)
+        .subscribe(
+          (response) => {
+            console.log('Usuario registrado:', response);
+            this.closeLoginModal();
+            alert('Usuario registrado correctamente');
+          },
+          (error) => {
+            console.error('Error al registrar usuario:', error);
+            alert('Hubo un error al registrar el usuario.');
+          }
+        );
+    }
 }

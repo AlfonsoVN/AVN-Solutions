@@ -37,26 +37,30 @@ def api_root(request):
 
 class RegisterUser(APIView):
     def post(self, request):
-        data = JSONParser().parse(request)
+        data = request.data
         name = data.get('name')
         email = data.get('email')
         password = data.get('password')
 
+        # Verificar si los campos obligatorios están presentes
         if not name or not email or not password:
-            return Response({'error': 'Nombre, Correo y Contraseña son obligatorios'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Nombre, correo electrónico y contraseña son obligatorios.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        # Asegúrate de no tener un correo duplicado
+        # Verificar si el correo electrónico ya está registrado
         if User.objects.filter(email=email).exists():
-            return Response({'error': 'El correo electrónico ya está en uso'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'El correo electrónico ya está en uso.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Crear el usuario
         user = User.objects.create(
             name=name,
             email=email,
-            password=make_password(password),
-            role=0  # Usuario por defecto, o puedes modificar este campo según tus necesidades
+            password=make_password(password),  # Asegúrate de encriptar la contraseña
+            role=0  # Usuario estándar por defecto
         )
-        return Response({'success': 'Usuario registrado correctamente'}, status=status.HTTP_201_CREATED)
+
+        # Devolver una respuesta exitosa
+        return Response({'success': 'Usuario registrado correctamente.'}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
