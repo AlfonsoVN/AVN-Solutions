@@ -19,12 +19,35 @@ from .models import Conexion  # Asegúrate de tener este modelo definido
 from .serializers import ConexionSerializer
 from .utils import obtener_conexion  # Importa las funciones desde utils
 
+from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import User
-from rest_framework.parsers import JSONParser
 from django.contrib.auth.hashers import make_password
+
+class RegisterUser(APIView):
+    def post(self, request):
+        data = request.data
+        name = data.get('name')
+        email = data.get('email')
+        password = data.get('password')
+
+        if not name or not email or not password:
+            return Response({'error': 'Nombre, Correo y Contraseña son obligatorios'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Asegúrate de no tener un correo duplicado
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'El correo electrónico ya está en uso'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Crear el usuario usando el modelo User de Django
+        user = User.objects.create_user(
+            username=email,  # El email será el username
+            email=email,
+            password=password,
+            first_name=name  # Usamos el campo first_name para el nombre del usuario
+        )
+
+        return Response({'success': 'Usuario registrado correctamente'}, status=status.HTTP_201_CREATED)
 
 def api_root(request):
     """
@@ -34,33 +57,6 @@ def api_root(request):
         'obtener_conexion': 'http://127.0.0.1:8000/api/obtener_conexion/',
         'añadir_conexion': 'http://127.0.0.1:8000/api/anadir_conexion/',
     })
-
-class RegisterUser(APIView):
-    def post(self, request):
-        data = request.data
-        name = data.get('name')
-        email = data.get('email')
-        password = data.get('password')
-
-        # Verificar si los campos obligatorios están presentes
-        if not name or not email or not password:
-            return Response({'error': 'Nombre, correo electrónico y contraseña son obligatorios.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        # Verificar si el correo electrónico ya está registrado
-        if User.objects.filter(email=email).exists():
-            return Response({'error': 'El correo electrónico ya está en uso.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Crear el usuario
-        user = User.objects.create(
-            name=name,
-            email=email,
-            password=make_password(password),  # Asegúrate de encriptar la contraseña
-            role=0  # Usuario estándar por defecto
-        )
-
-        # Devolver una respuesta exitosa
-        return Response({'success': 'Usuario registrado correctamente.'}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
