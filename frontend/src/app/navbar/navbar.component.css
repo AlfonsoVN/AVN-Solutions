@@ -72,39 +72,96 @@
     justify-content: center;
     align-items: center;
     z-index: 9999; /* Asegura que el modal esté encima de todos los demás elementos */
-  }
-  
-  /* Animación para el contenido del modal */
-  .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    width: 300px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* Añadimos animación para que aparezca de manera suave */
+}
+
+/* Animación para el contenido del modal */
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px; /* Hace que el modal sea más responsivo */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     transform: scale(0.8);
     transition: transform 0.3s ease-out;
-  }
-  
-  /* Hacer que el modal crezca al abrir */
-  .modal.open {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Hacer que el modal crezca al abrir */
+.modal.open {
     display: flex; /* Cambia a flex cuando se activa la clase 'open' */
-  }
-  
-  .modal.open .modal-content {
+}
+
+.modal.open .modal-content {
     transform: scale(1);
-  }
-  
-  .modal button {
+}
+
+/* Títulos del modal */
+.modal-content h2 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Botones dentro del modal */
+.modal-content button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #ffcc00;
+    color: #1e1e2f;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
     margin-top: 10px;
-  }
-  
-  /* Input fields dentro del modal */
-  .modal-content input {
+}
+
+.modal-content button:hover {
+    background-color: #e6b800;
+}
+
+/* Botón de cancelar */
+.modal-content .cancel-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.modal-content .cancel-btn:hover {
+    background-color: #e53935;
+}
+
+/* Campos de entrada dentro del modal */
+.modal-content input {
     width: 100%;
-    padding: 8px;
+    padding: 12px;
     margin: 8px 0;
     border-radius: 4px;
     border: 1px solid #ccc;
-  }
+    font-size: 16px;
+}
+
+/* Estilos de enfoque en los campos de entrada */
+.modal-content input:focus {
+    border-color: #ffcc00;
+    outline: none;
+}
+
+/* Etiquetas de los campos */
+.modal-content label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+/* Espaciado entre los campos */
+.modal-content .form-group {
+    width: 100%;
+    margin-bottom: 15px;
+}
   
