@@ -29,6 +29,7 @@ class RegisterUser(APIView):
     def post(self, request):
         data = request.data
         name = data.get('name')
+        last_name = data.get('last_name')
         email = data.get('email')
         password = data.get('password')
 
@@ -44,7 +45,8 @@ class RegisterUser(APIView):
             username=email,  # El email será el username
             email=email,
             password=password,
-            first_name=name  # Usamos el campo first_name para el nombre del usuario
+            first_name=name,  # Usamos el campo first_name para el nombre del usuario
+            last_name=last_name
         )
 
         return Response({'success': 'Usuario registrado correctamente'}, status=status.HTTP_201_CREATED)

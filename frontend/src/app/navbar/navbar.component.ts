@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { last } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -16,6 +17,7 @@ export class NavbarComponent {
     isModalOpen: boolean = false;
     userData = {
       name: '',
+      last_name: '',
       email: '',
       password: '',
       confirmPassword: ''
