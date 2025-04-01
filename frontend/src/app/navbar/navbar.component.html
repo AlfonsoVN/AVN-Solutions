@@ -1,7 +1,9 @@
 <body>
 <nav class="navbar">
   <div class="nav-left">
-    <a>Logo</a>
+    <a href="#">
+      <img src="prueba.png" alt="Logo" class="logo-img">
+    </a>
   </div>
   <div class="nav-mid">
     <a routerLink="/" class="nav-item">Inicio</a>
@@ -10,13 +12,13 @@
     <a routerLink="/start-chat" class="nav-item">Iniciar Chat</a>
   </div>
   <div class="nav-right">
-    <button class="sign-btn">Iniciar sesión</button>
-    <button (click)="openLoginModal()" class="login-btn">Regístrate</button>
+    <button class="sign-btn" (click)="openSignInModal()">Iniciar sesión</button>
+    <button (click)="openRegisterModal()" class="login-btn">Regístrate</button>
   </div>
 </nav>
 
-<!-- Modal de Login -->
-<div class="modal" [ngClass]="{'open': isModalOpen}" (click)="closeLoginModal()">
+<!-- Modal del registro -->
+<div class="modal" [ngClass]="{'open': isRegisterModalOpen}" (click)="closeRegisterModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h2>Crear Cuenta</h2>
       <form (ngSubmit)="registerUser()">
@@ -47,7 +49,28 @@
   
         <button type="submit" class="login-btn">Crear Cuenta</button>
       </form>
-      <button class="cancel-btn" (click)="closeLoginModal()">Cancelar</button>
+      
     </div>
   </div>
+
+<!-- Modal de Iniciar sesión -->
+<div class="modal" [ngClass]="{'open': isSignInModalOpen}" (click)="closeSignInModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>Iniciar Sesión</h2>
+    <form (ngSubmit)="signInUser()">
+      <div class="form-group">
+        <label for="email">Correo Electrónico:</label>
+        <input type="email" id="email" [(ngModel)]="userData.email" name="email" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" [(ngModel)]="userData.password" name="password" required />
+      </div>
+
+      <button type="submit" class="sign-btn">Iniciar sesión</button>
+    </form>
+    
+  </div>
+</div>
 </body>

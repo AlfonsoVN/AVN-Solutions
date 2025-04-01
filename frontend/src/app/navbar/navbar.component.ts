@@ -14,7 +14,8 @@ import { last } from 'rxjs';
   imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],  // Asegúrate de incluir CommonModule aquí
 })
 export class NavbarComponent {
-    isModalOpen: boolean = false;
+  isSignInModalOpen = false;
+  isRegisterModalOpen = false;
     userData = {
       name: '',
       last_name: '',
@@ -25,13 +26,21 @@ export class NavbarComponent {
   
     constructor(private http: HttpClient, private router: Router) {}
   
-    openLoginModal() {
-      this.isModalOpen = true;
-    }
-  
-    closeLoginModal() {
-      this.isModalOpen = false;
-    }
+      openSignInModal() {
+    this.isSignInModalOpen = true;
+  }
+
+  closeSignInModal() {
+    this.isSignInModalOpen = false;
+  }
+
+  openRegisterModal() {
+    this.isRegisterModalOpen = true;
+  }
+
+  closeRegisterModal() {
+    this.isRegisterModalOpen = false;
+  }
   
     registerUser() {
       if (this.userData.password !== this.userData.confirmPassword) {
@@ -44,7 +53,7 @@ export class NavbarComponent {
         .subscribe(
           (response) => {
             console.log('Usuario registrado:', response);
-            this.closeLoginModal();
+            this.closeRegisterModal();
             alert('Usuario registrado correctamente');
           },
           (error) => {
@@ -52,5 +61,11 @@ export class NavbarComponent {
             alert('Hubo un error al registrar el usuario.');
           }
         );
+    }
+
+    signInUser() {
+      // Lógica para iniciar sesión
+      console.log('Iniciar sesión', this.userData);
+      this.closeSignInModal();
     }
 }

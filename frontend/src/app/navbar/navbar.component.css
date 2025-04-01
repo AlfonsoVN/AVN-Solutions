@@ -48,6 +48,17 @@ body {
     gap: 40px;
 }
   
+.logo-img {
+    height: 50px; /* Ajusta la altura según tus necesidades */
+    width: auto;
+    margin-right: 20px; /* Espacio entre el logo y los elementos del navbar */
+    transition: transform 0.3s ease; /* Animación suave al pasar el mouse */
+}
+
+.logo-img:hover {
+    transform: scale(1.1); /* Aumenta el tamaño del logo al pasar el mouse */
+}
+
 .login-btn {
 padding: 8px 16px;
 border: none;
