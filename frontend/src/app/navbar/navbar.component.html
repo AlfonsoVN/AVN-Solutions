@@ -1,3 +1,4 @@
+<body>
 <nav class="navbar">
   <div class="nav-left">
     <a>Logo</a>
@@ -9,7 +10,8 @@
     <a routerLink="/start-chat" class="nav-item">Iniciar Chat</a>
   </div>
   <div class="nav-right">
-    <button (click)="openLoginModal()" class="login-btn">Login</button>
+    <button class="sign-btn">Iniciar sesión</button>
+    <button (click)="openLoginModal()" class="login-btn">Regístrate</button>
   </div>
 </nav>
 
@@ -48,4 +50,4 @@
       <button class="cancel-btn" (click)="closeLoginModal()">Cancelar</button>
     </div>
   </div>
-  
+</body>
