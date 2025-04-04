@@ -23,7 +23,7 @@ table {
   
   /* Estilo de las cabeceras */
   th {
-    background-color: #4CAF50;
+    background-color: #8a83f4;
     color: white;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -149,7 +149,7 @@ table {
   }
   
   button {
-    background-color: #4CAF50;
+    background-color: #8a83f4;
     color: white;
     padding: 10px 20px;
     margin: 10px;
