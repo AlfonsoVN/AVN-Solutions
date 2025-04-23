@@ -1,32 +1,31 @@
 <body>
-<nav class="navbar">
-  <div class="nav-left">
-    <a href="#">
-      <img src="prueba.png" alt="Logo" class="logo-img">
-    </a>
-  </div>
-  <div class="nav-mid">
-    <a routerLink="/" class="nav-item">Inicio</a>
-    <a routerLink="/add-connection" class="nav-item">Añadir Conexión</a>
-    <a routerLink="/connections-list" class="nav-item">Lista de Conexiones</a>
-    <a routerLink="/start-chat" class="nav-item">Iniciar Chat</a>
-  </div>
-  <div class="nav-right">
-    <ng-container *ngIf="!currentUser; else loggedInTemplate">
-      <button class="sign-btn" (click)="openSignInModal()">Iniciar sesión</button>
-      <button (click)="openRegisterModal()" class="login-btn">Regístrate</button>
-    </ng-container>
-  
-    <ng-template #loggedInTemplate>
-      <span class="user-name">Hola, {{ currentUser }}</span>
-      <button (click)="logout()" class="logout-btn">Cerrar sesión</button>
-    </ng-template>
-  </div>
-  
-</nav>
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="#">
+        <img src="prueba.png" alt="Logo" class="logo-img" />
+      </a>
+    </div>
+    <div class="nav-mid">
+      <a routerLink="/" class="nav-item">Inicio</a>
+      <a routerLink="/add-connection" class="nav-item">Añadir Conexión</a>
+      <a routerLink="/connections-list" class="nav-item">Lista de Conexiones</a>
+      <a routerLink="/start-chat" class="nav-item">Iniciar Chat</a>
+    </div>
+    <div class="nav-right">
+      <ng-container *ngIf="!currentUserEmail; else loggedInTemplate">
+        <button class="sign-btn" (click)="openSignInModal()">Iniciar sesión</button>
+        <button (click)="openRegisterModal()" class="login-btn">Regístrate</button>
+      </ng-container>
 
-<!-- Modal del registro -->
-<div class="modal" [ngClass]="{'open': isRegisterModalOpen}" (click)="closeRegisterModal()">
+      <ng-template #loggedInTemplate>
+        <span class="user-name">Hola, {{ currentUserEmail }}</span>
+        <button (click)="logout()" class="logout-btn">Cerrar sesión</button>
+      </ng-template>
+    </div>
+  </nav>
+
+  <!-- Modal de Registro -->
+  <div class="modal" [ngClass]="{ open: isRegisterModalOpen }" (click)="closeRegisterModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h2>Crear Cuenta</h2>
       <form (ngSubmit)="registerUser()">
@@ -34,51 +33,49 @@
           <label for="name">Nombre:</label>
           <input type="text" id="name" [(ngModel)]="userData.name" name="name" required />
         </div>
-  
+
         <div class="form-group">
           <label for="last_name">Apellidos:</label>
           <input type="text" id="last_name" [(ngModel)]="userData.last_name" name="last_name" required />
         </div>
-  
+
         <div class="form-group">
           <label for="register_email">Correo Electrónico:</label>
           <input type="email" id="register_email" [(ngModel)]="userData.email" name="email" required />
         </div>
-  
+
         <div class="form-group">
           <label for="register_password">Contraseña:</label>
           <input type="password" id="register_password" [(ngModel)]="userData.password" name="password" required />
         </div>
-  
+
         <div class="form-group">
           <label for="confirmPassword">Confirmar Contraseña:</label>
           <input type="password" id="confirmPassword" [(ngModel)]="userData.confirmPassword" name="confirmPassword" required />
         </div>
-  
+
         <button type="submit" class="login-btn">Crear Cuenta</button>
       </form>
-      
     </div>
   </div>
 
-<!-- Modal de Iniciar sesión -->
-<div class="modal" [ngClass]="{'open': isSignInModalOpen}" (click)="closeSignInModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <h2>Iniciar Sesión</h2>
-    <form (ngSubmit)="signInUser()">
-      <div class="form-group">
-        <label for="login_email">Correo Electrónico:</label>
-        <input type="email" id="login_email" [(ngModel)]="userData.email" name="email" required />
-      </div>
+  <!-- Modal de Iniciar sesión -->
+  <div class="modal" [ngClass]="{ open: isSignInModalOpen }" (click)="closeSignInModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Iniciar Sesión</h2>
+      <form (ngSubmit)="signInUser()">
+        <div class="form-group">
+          <label for="login_email">Correo Electrónico:</label>
+          <input type="email" id="login_email" [(ngModel)]="userData.email" name="email" required />
+        </div>
 
-      <div class="form-group">
-        <label for="login_password">Contraseña:</label>
-        <input type="password" id="login_password" [(ngModel)]="userData.password" name="password" required />
-      </div>
+        <div class="form-group">
+          <label for="login_password">Contraseña:</label>
+          <input type="password" id="login_password" [(ngModel)]="userData.password" name="password" required />
+        </div>
 
-      <button type="submit" class="sign-btn">Iniciar sesión</button>
-    </form>
-    
+        <button type="submit" class="sign-btn">Iniciar sesión</button>
+      </form>
+    </div>
   </div>
-</div>
 </body>

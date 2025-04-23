@@ -178,7 +178,7 @@ def anadir_conexion(request):
             name=data.get('name'),
             host=data.get('host'),
             db_type=data.get('db_type'),
-            port=data.get('port'),
+            port=int(data.get('port')),
             dbname=data.get('dbname'),
             user=data.get('user'),
             password=data.get('password'),

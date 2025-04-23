@@ -60,7 +60,7 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
   
       this.http.post<{ exito: boolean, mensaje?: string }>(
         'http://localhost:8000/api/anadir_conexion/',
-        JSON.stringify(this.conexionForm.value), // Convertimos a JSON
+        this.conexionForm.value, // Convertimos a JSON
         { headers }
       ).subscribe({
         next: (response) => {

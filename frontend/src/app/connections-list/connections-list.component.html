@@ -1,5 +1,11 @@
+<ng-template #noTokenTemplate>
+  <div class="no-token-msg">
+    <p>No tienes permiso para ver esta página. Por favor, inicia sesión.</p>
+  </div>
+</ng-template>
+
 <!-- connections-list.component.html -->
-<div class="main-content">
+<div class="main-content" *ngIf="hasToken; else noTokenTemplate">
   <div class="connections-table">
     <table>
       <thead>
@@ -23,6 +29,8 @@
       </tbody>
     </table>
   </div>
+
+  
 
   <!-- Modal de edición -->
   <div class="modal" *ngIf="isEditModalOpen">

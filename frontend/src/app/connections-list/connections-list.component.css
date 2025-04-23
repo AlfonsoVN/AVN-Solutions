@@ -162,3 +162,14 @@ table {
     background-color: #f44336;
   }
   
+  .no-token-msg {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #a94442;
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    border-radius: 4px;
+    max-width: 600px;
+    margin: 40px auto;
+  }
