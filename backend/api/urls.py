@@ -1,7 +1,11 @@
 # urls.py
 from django.urls import path
 from . import views
-from .views import obtener_conexion, anadir_conexion, api_root, test_connection, RegisterUser
+from .views import obtener_conexion, anadir_conexion, api_root, test_connection, RegisterUser, get_user_details
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('', api_root, name='api_root'),  # Ruta para la raíz de la API
@@ -11,6 +15,10 @@ urlpatterns = [
     path('get-connections/', views.get_connections, name='get_connections'),
     path('delete-connection/<int:pk>/', views.delete_connection, name='delete_connection'),
     path('edit-connection/<int:pk>/', views.edit_connection, name='edit_connection'),
-    path('register/', RegisterUser.as_view(), name='register_user')
+    path('register/', RegisterUser.as_view(), name='register_user'),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('user/<int:user_id>/', get_user_details, name='get_user_details')
 ]
+
 

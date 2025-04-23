@@ -96,6 +96,17 @@ def edit_connection(request, pk):
         return Response({'mensaje': 'Conexión actualizada correctamente'}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['GET'])
+def get_user_details(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)  # Usamos el modelo User de Django
+        return JsonResponse({
+            'email': user.email,
+            'last_name': user.last_name,
+        })
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    
 
 @api_view(['POST'])  # Asegura que solo acepte POST
 def test_connection(request):
