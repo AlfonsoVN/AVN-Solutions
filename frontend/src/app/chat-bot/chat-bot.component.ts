@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-chat-bot',
@@ -18,12 +19,34 @@ export class ChatBotComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.databaseId = this.route.snapshot.paramMap.get('id');
-    // Inicializar el chat o cargar mensajes previos si es necesario
+    this.initializeChat();
+  }
+
+  initializeChat() {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+
+    this.http.post('/api/chat_view/', { 
+      prompt: 'initialize',
+      databaseId: this.databaseId
+    }, { headers }).subscribe({
+      next: (response: any) => {
+        console.log('Respuesta inicial recibida:', response);
+        this.messages.push({role: 'assistant', content: response.response});
+      },
+      error: (error) => {
+        console.error('Error al inicializar el chat:', error);
+        this.messages.push({role: 'assistant', content: 'Lo siento, hubo un error al inicializar el chat.'});
+      }
+    });
   }
 
   sendMessage() {
@@ -31,7 +54,8 @@ export class ChatBotComponent implements OnInit {
       this.messages.push({role: 'user', content: this.newMessage});
       
       const headers = new HttpHeaders({
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.authService.getToken()}`
       });
   
       this.http.post('/api/chat_view/', { 
@@ -50,5 +74,6 @@ export class ChatBotComponent implements OnInit {
       });
     }
   }
+  
   
 }

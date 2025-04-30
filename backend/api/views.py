@@ -31,6 +31,11 @@ from rest_framework import status
 from django.contrib.auth.hashers import make_password
 
 from .groq_service import GroqService
+import groq
+from sqlalchemy import create_engine, inspect
+
+import logging
+logger = logging.getLogger(__name__)
 
 class RegisterUser(APIView):
     def post(self, request):
@@ -218,18 +223,141 @@ def anadir_conexion(request):
 
 
 
-@csrf_exempt
+client = groq.Client(api_key=settings.GROQ_API_KEY)
+
+def get_database_structure(database_id):
+    try:
+        connection = Conexion.objects.get(id=database_id)
+        db_url = obtener_conexion(connection)
+        engine = create_engine(db_url)
+        inspector = inspect(engine)
+        
+        structure = {}
+        for table_name in inspector.get_table_names():
+            columns = inspector.get_columns(table_name)
+            structure[table_name] = [column['name'] for column in columns]
+        
+        return structure
+    except Exception as e:
+        print(f"Error al obtener la estructura de la base de datos: {str(e)}")
+        return None
+
+def format_database_structure(db_structure):
+    formatted_structure = "Estructura de la base de datos:\n\n"
+    for table, columns in db_structure.items():
+        formatted_structure += f"Tabla: {table}\n"
+        formatted_structure += "Columnas:\n"
+        for column in columns:
+            formatted_structure += f"  - {column}\n"
+        formatted_structure += "\n"
+    return formatted_structure
+
+def handle_database_questions(prompt, db_structure):
+    prompt = prompt.lower().strip()
+    
+    if "cuantas tablas hay" in prompt or "número de tablas" in prompt:
+        num_tables = len(db_structure)
+        return f"Hay {num_tables} tablas en la base de datos."
+    
+    elif "cuales son las tablas" in prompt or "lista de tablas" in prompt:
+        table_names = ", ".join(db_structure.keys())
+        return f"Las tablas en la base de datos son: {table_names}."
+    
+    elif "muestra tablas" in prompt:
+        return format_database_structure(db_structure)
+    
+    elif "columnas de" in prompt or "estructura de" in prompt:
+        for table_name in db_structure.keys():
+            if table_name.lower() in prompt:
+                columns = ", ".join(db_structure[table_name])
+                return f"Las columnas de la tabla {table_name} son: {columns}."
+        return "No se encontró la tabla especificada en la pregunta."
+    
+    return None
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def chat_view(request):
+    logger.info("Recibida solicitud en chat_view")
     if request.method == 'POST':
         data = json.loads(request.body)
         prompt = data.get('prompt')
         database_id = data.get('databaseId')
+
+        logger.info(f"Prompt recibido: {prompt}")
+        logger.info(f"Database ID: {database_id}")
         
-        # Aquí iría tu lógica para procesar el prompt y obtener una respuesta
-        # Por ahora, solo devolveremos un eco del mensaje
+        # Obtener o inicializar el historial de mensajes de la sesión
+        if 'chat_history' not in request.session:
+            request.session['chat_history'] = []
+            db_structure = get_database_structure(database_id)
+            request.session['db_structure'] = db_structure
+            
+            # Crear el mensaje inicial del sistema con la estructura de la base de datos
+            system_message = (
+                f"You are a helpful assistant. The user is working with database ID {database_id}. "
+                f"Here is the structure of the database:\n\n{json.dumps(db_structure, indent=2)}\n\n"
+                "Always consider this database structure in your responses and use it to provide accurate information."
+            )
+            
+            request.session['chat_history'].append({
+                "role": "system",
+                "content": system_message
+            })
+            
+            # Añadir un mensaje inicial del asistente para mostrar la estructura al usuario
+            initial_response = (
+                f"Welcome! I'm here to help you with your database queries. "
+                f"I've loaded the structure of your database (ID: {database_id}). "
+                f"You can ask me to show the tables or ask about specific tables and columns."
+            )
+            
+            request.session['chat_history'].append({
+                "role": "assistant",
+                "content": initial_response
+            })
+            
+            return JsonResponse({'response': initial_response})
         
-        response = f"Recibido: {prompt} para la base de datos {database_id}"
+        chat_history = request.session['chat_history']
+        db_structure = request.session.get('db_structure', {})
         
-        return JsonResponse({'response': response})
+        # Manejar preguntas específicas sobre la base de datos
+        autonomous_response = handle_database_questions(prompt, db_structure)
+        if autonomous_response:
+            chat_history.append({"role": "user", "content": prompt})
+            chat_history.append({"role": "assistant", "content": autonomous_response})
+            request.session['chat_history'] = chat_history
+            return JsonResponse({'response': autonomous_response})
+        
+        # Añadir el mensaje del usuario al historial
+        chat_history.append({
+            "role": "user",
+            "content": prompt
+        })
+        
+        try:
+            # Llamada a la API de GroqCloud con todo el historial
+            chat_completion = client.chat.completions.create(
+                messages=chat_history,
+                model="llama-3.3-70b-versatile",
+            )
+            
+            # Obtener la respuesta de GroqCloud
+            response = chat_completion.choices[0].message.content
+            
+            # Añadir la respuesta del asistente al historial
+            chat_history.append({
+                "role": "assistant",
+                "content": response
+            })
+            
+            # Guardar el historial actualizado en la sesión
+            request.session['chat_history'] = chat_history
+            
+            return JsonResponse({'response': response})
+        except Exception as e:
+            logger.error(f"Error en chat_view: {str(e)}", exc_info=True)
+            return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)

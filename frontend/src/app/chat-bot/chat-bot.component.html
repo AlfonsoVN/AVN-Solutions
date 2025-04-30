@@ -1,15 +1,8 @@
 <div class="chat-container">
-    <h2>Chat Bot - Base de Datos ID: {{ databaseId }}</h2>
-    
-    <div class="messages">
-      <div *ngFor="let message of messages" [ngClass]="{'user-message': message.role === 'user', 'bot-message': message.role === 'assistant'}">
-        {{ message.content }}
-      </div>
+    <div *ngFor="let message of messages" [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}">
+      {{ message.content }}
     </div>
-  
-    <div class="input-area">
-      <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe tu mensaje...">
-      <button (click)="sendMessage()">Enviar</button>
-    </div>
+    <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe tu mensaje...">
+    <button (click)="sendMessage()">Enviar</button>
   </div>
   
