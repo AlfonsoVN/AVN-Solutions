@@ -295,9 +295,9 @@ def chat_view(request):
             
             # Crear el mensaje inicial del sistema con la estructura de la base de datos
             system_message = (
-                f"You are a helpful assistant. The user is working with database ID {database_id}. "
-                f"Here is the structure of the database:\n\n{json.dumps(db_structure, indent=2)}\n\n"
-                "Always consider this database structure in your responses and use it to provide accurate information."
+                f"Eres un asistente útil que SIEMPRE responde en español. El usuario está trabajando con la base de datos con ID {database_id}. "
+                f"A continuación se muestra la estructura de la base de datos:\n\n{json.dumps(db_structure, indent=2)}\n\n"
+                "Ten siempre en cuenta esta estructura de base de datos en tus respuestas y utilízala para proporcionar información precisa."
             )
             
             request.session['chat_history'].append({
@@ -307,9 +307,9 @@ def chat_view(request):
             
             # Añadir un mensaje inicial del asistente para mostrar la estructura al usuario
             initial_response = (
-                f"Welcome! I'm here to help you with your database queries. "
-                f"I've loaded the structure of your database (ID: {database_id}). "
-                f"You can ask me to show the tables or ask about specific tables and columns."
+                f"¡Bienvenido! Estoy aquí para ayudarte con tus consultas a la base de datos. "
+                f"He cargado la estructura de tu base de datos (ID: {database_id}). "
+                f"Puedes pedirme que te muestre las tablas o preguntar sobre tablas y columnas específicas."
             )
             
             request.session['chat_history'].append({
@@ -340,7 +340,7 @@ def chat_view(request):
             # Llamada a la API de GroqCloud con todo el historial
             chat_completion = client.chat.completions.create(
                 messages=chat_history,
-                model="llama-3.3-70b-versatile",
+                model="llama-3.3-70b-versatile", 
             )
             
             # Obtener la respuesta de GroqCloud

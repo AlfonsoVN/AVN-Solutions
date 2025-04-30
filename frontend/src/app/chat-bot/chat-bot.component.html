@@ -1,8 +1,11 @@
 <div class="chat-container">
-    <div *ngFor="let message of messages" [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}">
-      {{ message.content }}
+    <div class="messages">
+        <div *ngFor="let message of messages" [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}">
+            {{ message.content }}
+        </div>
     </div>
-    <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe tu mensaje...">
-    <button (click)="sendMessage()">Enviar</button>
-  </div>
-  
+    <div class="input-area">
+        <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe tu mensaje...">
+        <button (click)="sendMessage()">Enviar</button>
+    </div>
+</div>
