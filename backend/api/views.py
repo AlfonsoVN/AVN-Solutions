@@ -8,12 +8,17 @@ from django.db import IntegrityError
 from sqlalchemy.exc import OperationalError
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from sqlalchemy import create_engine, text, func
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from .forms import ConexionForm
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Conexion  # Asegúrate de tener este modelo definido
 from .serializers import ConexionSerializer
@@ -24,6 +29,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
+
+from .groq_service import GroqService
 
 class RegisterUser(APIView):
     def post(self, request):
@@ -62,15 +69,25 @@ def api_root(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_connections(request):
-    # Obtener todas las conexiones de la base de datos
-    conexiones = Conexion.objects.all()
+    user_email = request.user.email
     
-    # Serializamos los datos
+    conexiones = Conexion.objects.filter(name__contains=user_email)
+    
+    # Serializar los datos
     serializer = ConexionSerializer(conexiones, many=True)
     
-    # Devolvemos la lista de conexiones en formato JSON
-    return Response(serializer.data)
+    # Modificar los datos serializados
+    modified_data = []
+    for item in serializer.data:
+        # Suponiendo que el formato es "email ~ nombre_base_datos"
+        name_parts = item['name'].split(' ~ ')
+        if len(name_parts) > 1:
+            item['name'] = name_parts[1]  # Solo el nombre de la base de datos
+        modified_data.append(item)
+    
+    return Response(modified_data)
 
 
 @api_view(['DELETE'])
@@ -149,8 +166,9 @@ def test_connection(request):
         # Cualquier otro error
         return JsonResponse({'exito': False, 'mensaje': str(e)}, status=400)
 
-@csrf_exempt  # Desactiva CSRF (solo para pruebas; en producción hay mejores formas)
+
 @api_view(['POST'])  # Asegura que solo acepte POST
+@permission_classes([IsAuthenticated])
 def anadir_conexion(request):
     try:
 
@@ -160,8 +178,12 @@ def anadir_conexion(request):
 
         data = json.loads(request.body.decode('utf-8'))  # Leer JSON desde request.body
 
+        user_identifier = request.user.email if request.user.email else request.user.username
+
+        connection_name = f"{user_identifier } ~ {data.get('name')}"
+
         conexion_existente = Conexion.objects.filter(
-            name=data.get('name'),
+            name=connection_name,
             host=data.get('host'),
             db_type=data.get('db_type'),
             dbname=data.get('dbname'),
@@ -175,7 +197,7 @@ def anadir_conexion(request):
             return JsonResponse({'exito': False, 'mensaje': 'Ya existe una conexión con estos parámetros.'}, status=400)
 
         nueva_conexion = Conexion.objects.create(
-            name=data.get('name'),
+            name=connection_name,
             host=data.get('host'),
             db_type=data.get('db_type'),
             port=int(data.get('port')),
@@ -193,3 +215,21 @@ def anadir_conexion(request):
     except Exception as e:
         # Cualquier otro error
         return JsonResponse({'exito': False, 'mensaje': str(e)}, status=400)
+
+
+
+@csrf_exempt
+def chat_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        prompt = data.get('prompt')
+        database_id = data.get('databaseId')
+        
+        # Aquí iría tu lógica para procesar el prompt y obtener una respuesta
+        # Por ahora, solo devolveremos un eco del mensaje
+        
+        response = f"Recibido: {prompt} para la base de datos {database_id}"
+        
+        return JsonResponse({'response': response})
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

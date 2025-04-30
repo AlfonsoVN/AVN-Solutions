@@ -1,8 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-connections-list',
@@ -17,12 +18,10 @@ export class ConnectionsListComponent implements OnInit {
   editConnectionData: any = {};
   hasToken = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   ngOnInit(): void {
-    const token = localStorage.getItem('access');
-    this.hasToken = !!token;
-
+    this.hasToken = this.authService.isLoggedIn();
     if (this.hasToken) {
       this.getConnections().subscribe((data: any[]) => {
         this.connections = data;
@@ -31,13 +30,19 @@ export class ConnectionsListComponent implements OnInit {
   }
 
   getConnections(): Observable<any[]> {
-    return this.http.get<any[]>('http://localhost:8000/api/get-connections/');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+    return this.http.get<any[]>('http://localhost:8000/api/get-connections/', { headers });
   }
 
   editConnection() {
     if (this.editConnectionData) {
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${this.authService.getToken()}`
+      });
       this.http
-        .put<any>(`http://localhost:8000/api/edit-connection/${this.editConnectionData.id}/`, this.editConnectionData)
+        .put<any>(`http://localhost:8000/api/edit-connection/${this.editConnectionData.id}/`, this.editConnectionData, { headers })
         .subscribe({
           next: () => {
             alert('Conexión actualizada correctamente');
@@ -66,7 +71,10 @@ export class ConnectionsListComponent implements OnInit {
     const confirmation = window.confirm("¿Estás seguro de que deseas eliminar esta conexión?");
     
     if (confirmation) {
-      this.http.delete(`http://localhost:8000/api/delete-connection/${id}/`).subscribe({
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${this.authService.getToken()}`
+      });
+      this.http.delete(`http://localhost:8000/api/delete-connection/${id}/`, { headers }).subscribe({
         next: () => {
           this.connections = this.connections.filter(conexion => conexion.id !== id);
           alert('Conexión eliminada correctamente');

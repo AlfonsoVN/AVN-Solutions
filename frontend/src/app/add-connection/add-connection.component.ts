@@ -1,9 +1,10 @@
 // add-connection.component.ts
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-add-connection',
@@ -17,7 +18,7 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
   apiUrl = 'http://localhost:8000/api/test_connection/'; // Endpoint de Django
   connectionSuccessful: boolean = false;
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(private fb: FormBuilder, private http: HttpClient, private authService: AuthService) {
     this.conexionForm = this.fb.group({
       name: ['', Validators.required],
       host: ['', Validators.required],
@@ -29,12 +30,20 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
     });
   }
 
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
   comprobarConexion() {
     if (this.conexionForm.valid) {
-      const headers = { 'Content-Type': 'application/json' };
+      const headers = this.getHeaders();
       console.log(this.conexionForm.value);
       
-      this.http.post<{ exito: boolean }>(this.apiUrl, this.conexionForm.value).subscribe({
+      this.http.post<{ exito: boolean }>(this.apiUrl, this.conexionForm.value, { headers }).subscribe({
         next: (response) => {
           if (response.exito) {
             alert('Conexión exitosa');
@@ -56,7 +65,7 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
 
   anadirConexion() {
     if (this.conexionForm.valid && this.connectionSuccessful) {
-      const headers = { 'Content-Type': 'application/json' };
+      const headers = this.getHeaders();
   
       this.http.post<{ exito: boolean, mensaje?: string }>(
         'http://localhost:8000/api/anadir_conexion/',

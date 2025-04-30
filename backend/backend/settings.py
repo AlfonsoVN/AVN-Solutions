@@ -159,3 +159,5 @@ CSRF_HEADER_NAME = "X-CSRFToken"
 
 # Seguridad en cookies de sesión
 SESSION_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
+
+GROQ_API_KEY = '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'

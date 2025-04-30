@@ -18,7 +18,8 @@ urlpatterns = [
     path('register/', RegisterUser.as_view(), name='register_user'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('user/<int:user_id>/', get_user_details, name='get_user_details')
+    path('user/<int:user_id>/', get_user_details, name='get_user_details'),
+    path('chat_view/', views.chat_view, name='chat_view'),
 ]
 
 
