@@ -20,7 +20,7 @@ from .forms import ConexionForm
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import Conexion  # Asegúrate de tener este modelo definido
+from .models import Conexion, SQLExecution  # Asegúrate de tener este modelo definido
 from .serializers import ConexionSerializer
 from .utils import obtener_conexion  # Importa las funciones desde utils
 
@@ -32,8 +32,13 @@ from django.contrib.auth.hashers import make_password
 
 from .groq_service import GroqService
 import groq
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session
+
+from datetime import datetime, date
+from decimal import Decimal
+import pandas as pd
+
 
 import re
 
@@ -245,12 +250,33 @@ def execute_sql_query(connection, query):
     db_url = obtener_conexion(connection)
     engine = create_engine(db_url)
     
-    with Session(engine) as session:
-        result = session.execute(text(query))
-        columns = result.keys()
-        rows = [dict(zip(columns, row)) for row in result.fetchall()]
-    
-    return columns, rows
+    with engine.connect() as conn:
+        result = conn.execute(text(query))
+        if result.returns_rows:
+            columns = result.keys()
+            rows = []
+            for row in result:
+                row_dict = {}
+                for idx, column in enumerate(columns):
+                    value = row[idx]
+                    if isinstance(value, (datetime, date)):
+                        value = value.isoformat()
+                    elif isinstance(value, Decimal):
+                        value = float(value)
+                    elif not isinstance(value, (str, int, float, bool, type(None))):
+                        value = str(value)
+                    row_dict[column] = value
+                rows.append(row_dict)
+            
+            return {
+                'columns': list(columns),
+                'rows': rows
+            }
+        else:
+            return "Consulta ejecutada con éxito."
+
+
+
 
 def is_safe_query(query):
     # Verificar si la consulta es un SELECT
@@ -282,6 +308,14 @@ def chat_view(request):
                 "Si el usuario pide ver registros o ejecutar una consulta, proporciona la consulta SQL apropiada entre comillas triples ```."
             )
             
+            if connection.info_adicional:
+                system_message += f"\nInformación adicional sobre la base de datos: {connection.info_adicional}"
+            
+            if connection.file:
+                with open(f".\\media\\uploads\\{connection.file}", 'r', encoding="utf-8") as archivo_contenido:
+                    contenido = archivo_contenido.read()
+                system_message += f"\nContenido del archivo adjunto: {contenido}"
+            
             chat_completion = client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_message},
@@ -292,31 +326,33 @@ def chat_view(request):
             
             response = chat_completion.choices[0].message.content
             
-            # Buscar consultas SQL en la respuesta
             sql_match = re.search(r'```sql\n(.*?)\n```', response, re.DOTALL)
             if sql_match:
                 suggested_query = sql_match.group(1).strip()
-                if is_safe_query(suggested_query):
-                    try:
-                        columns, rows = execute_sql_query(connection, suggested_query)
+                is_safe = is_safe_query(suggested_query)
+                try:
+                    if is_safe:
+                        result = execute_sql_query(connection, suggested_query)
+                        SQLExecution.objects.create(
+                            user=request.user.username, bbdd=connection.name, query=suggested_query, executed_at=datetime.now())
                         return JsonResponse({
                             'response': response,
-                            'sql_result': {
-                                'columns': columns,
-                                'rows': rows
-                            }
+                            'sql_result': result,
+                            'show_only_table': True
                         })
-                    except Exception as e:
-                        logger.error(f"Error al ejecutar la consulta SQL: {str(e)}", exc_info=True)
+                    else:
                         return JsonResponse({
                             'response': response,
-                            'error': f"Error al ejecutar la consulta SQL: {str(e)}"
-                        }, status=500)
-                else:
+                            'warning': 'La consulta sugerida no es un SELECT y puede modificar la base de datos.',
+                            'suggested_query': suggested_query,
+                            'needs_confirmation': True
+                        })
+                except Exception as e:
+                    logger.error(f"Error al ejecutar la consulta SQL: {str(e)}", exc_info=True)
                     return JsonResponse({
                         'response': response,
-                        'warning': 'La consulta sugerida no es un SELECT y no se ejecutó por razones de seguridad.'
-                    })
+                        'error': f"Error al ejecutar la consulta SQL: {str(e)}"
+                    }, status=500)
             
             return JsonResponse({'response': response})
         except Conexion.DoesNotExist:
@@ -326,3 +362,62 @@ def chat_view(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def execute_dangerous_query(request):
+    data = json.loads(request.body)
+    query = data.get('query')
+    database_id = data.get('databaseId')
+
+    try:
+        connection = Conexion.objects.get(id=database_id)
+        db_url = obtener_conexion(connection)
+        engine = create_engine(db_url)
+        
+        with engine.connect() as conn:
+            # Ejecutar la consulta peligrosa
+            conn.execute(text(query))
+            conn.commit()
+            
+            # Obtener el nombre de la tabla afectada (asumiendo que es la primera palabra después de FROM, INTO o UPDATE)
+            table_name = re.search(r'(FROM|INTO|UPDATE)\s+(\w+)', query, re.IGNORECASE)
+            if table_name:
+                table_name = table_name.group(2)
+                
+                # Consultar el contenido actual de la tabla
+                result = conn.execute(text(f"SELECT * FROM {table_name}"))
+                columns = result.keys()
+                rows = []
+                for row in result:
+                    row_dict = {}
+                    for idx, column in enumerate(columns):
+                        value = row[idx]
+                        if isinstance(value, (datetime, date)):
+                            value = value.isoformat()
+                        elif isinstance(value, Decimal):
+                            value = float(value)
+                        elif not isinstance(value, (str, int, float, bool, type(None))):
+                            value = str(value)
+                        row_dict[column] = value
+                    rows.append(row_dict)
+                
+                result_data = {
+                    'message': "Consulta ejecutada con éxito. Aquí muestro los cambios realizados: ",
+                    'table_content': {
+                        'columns': list(columns),
+                        'rows': rows
+                    }
+                }
+            else:
+                result_data = {
+                    'message': "Consulta ejecutada con éxito. No se pudo determinar la tabla afectada."
+                }
+        
+        SQLExecution.objects.create(
+            user=request.user.username, bbdd=connection.name, query=query, executed_at=datetime.now())
+        return JsonResponse({'result': result_data})
+    except Exception as e:
+        logger.error(f"Error al ejecutar la consulta peligrosa: {str(e)}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)

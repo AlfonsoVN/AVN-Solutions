@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -161,3 +162,4 @@ CSRF_HEADER_NAME = "X-CSRFToken"
 SESSION_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
 
 GROQ_API_KEY = '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'
+

@@ -11,6 +11,7 @@ import { catchError, map } from 'rxjs/operators';
 export class AuthService {
   private baseUrl = 'http://localhost:8000/api';
   private jwtHelper = new JwtHelperService();
+  private refreshTokenTimeout: any;
 
   constructor(private http: HttpClient) {}
 

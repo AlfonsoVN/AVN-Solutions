@@ -1,7 +1,8 @@
 <div class="chat-container">
     <div class="messages">
         <div *ngFor="let message of messages" [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}">
-            {{ message.content }}
+            <div *ngIf="message.content" class="message-content">{{ message.content }}</div>
+            <div *ngIf="message.sqlResult" class="sql-result" [innerHTML]="message.sqlResult"></div>
         </div>
     </div>
     <div class="input-area">

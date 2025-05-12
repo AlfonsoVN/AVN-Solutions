@@ -1,8 +1,8 @@
 .chat-container {
-    max-width: 600px;
-    margin: 80px auto 0; /* Aumenta el margen superior */
+    max-width: 800px; /* Aumentado para dar más espacio a las tablas y gráficos */
+    margin: 80px auto 0;
     padding: 20px;
-    height: calc(95vh - 95px); /* Ajusta la altura para dejar espacio para el header */
+    height: calc(95vh - 95px);
     display: flex;
     flex-direction: column;
 }
@@ -17,7 +17,7 @@
 
 .user-message, .assistant-message {
     margin-bottom: 10px;
-    padding: 5px;
+    padding: 10px;
     border-radius: 5px;
 }
 
@@ -28,11 +28,12 @@
 
 .assistant-message {
     background-color: #f0f0f0;
+    text-align: left;
 }
 
 .input-area {
     display: flex;
-    margin-top: auto; /* Empuja el área de entrada hacia abajo */
+    margin-top: auto;
 }
 
 input {
@@ -44,3 +45,59 @@ button {
     padding: 5px 10px;
     margin-left: 10px;
 }
+
+/* Estilos para las tablas */
+/* Estilos para las tablas */
+.custom-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.custom-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table thead {
+    background-color: #f8f9fa;
+}
+
+.custom-table th,
+.custom-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.custom-table th {
+    font-weight: bold;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+}
+
+.custom-table tr:last-child td {
+    border-bottom: none;
+}
+
+.custom-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.custom-table tr:hover {
+    background-color: #f1f3f5;
+}
+
+
