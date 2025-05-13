@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -13,9 +14,13 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./navbar.component.css'],
   imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   isSignInModalOpen = false;
   isRegisterModalOpen = false;
+  currentUserEmail: string | null = null;
+  isAdmin: boolean = false;
+  private userSubscription: Subscription = new Subscription();
+
 
   userData = {
     name: '',
@@ -25,15 +30,22 @@ export class NavbarComponent implements OnInit {
     confirmPassword: '',
   };
 
-  currentUserEmail: string | null = null;
-
   constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit() {
+    this.userSubscription = this.authService.currentUser$.subscribe(user => {
+      this.currentUserEmail = user?.email || null;
+      this.isAdmin = this.authService.isAdmin();
+    });
+
     if (this.authService.isLoggedIn()) {
-      this.authService.getUserData().subscribe(user => {
-        this.currentUserEmail = user?.email || null;
-      });
+      this.authService.getUserData().subscribe();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
     }
   }
 
@@ -91,9 +103,7 @@ export class NavbarComponent implements OnInit {
         if (tokens.access) {
           this.authService.setToken(tokens.access);
           localStorage.setItem('refresh_token', tokens.refresh);
-
-          this.authService.getUserData().subscribe(user => {
-            this.currentUserEmail = user?.email || null;
+          this.authService.getUserData().subscribe(() => {
             alert('Sesión iniciada correctamente');
             this.closeSignInModal();
             this.router.navigate(['/']);
@@ -107,7 +117,6 @@ export class NavbarComponent implements OnInit {
 
   logout() {
     this.authService.logout();
-    this.currentUserEmail = null;
     this.router.navigate(['/']);
   }
 

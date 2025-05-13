@@ -133,6 +133,7 @@ def get_user_details(request, user_id):
         return JsonResponse({
             'email': user.email,
             'last_name': user.last_name,
+            'is_superuser': user.is_superuser
         })
     except User.DoesNotExist:
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)

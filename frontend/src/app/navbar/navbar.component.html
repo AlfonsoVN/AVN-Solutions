@@ -10,6 +10,7 @@
       <a routerLink="/add-connection" class="nav-item">Añadir Conexión</a>
       <a routerLink="/connections-list" class="nav-item">Lista de Conexiones</a>
       <a routerLink="/start-chat" class="nav-item">Iniciar Chat</a>
+      <a *ngIf="isAdmin" routerLink="/admin" class="nav-item">Admin</a>
     </div>
     <div class="nav-right">
       <ng-container *ngIf="!currentUserEmail; else loggedInTemplate">

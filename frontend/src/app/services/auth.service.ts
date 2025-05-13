@@ -3,7 +3,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,9 @@ export class AuthService {
   private baseUrl = 'http://localhost:8000/api';
   private jwtHelper = new JwtHelperService();
   private refreshTokenTimeout: any;
+  private currentUser: any = null;
+  private currentUserSubject = new BehaviorSubject<any>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
     if (this.isLoggedIn()) {
@@ -25,6 +29,9 @@ export class AuthService {
     this.startRefreshTokenTimer();
   }
   
+  setCurrentUser(user: any) {
+    this.currentUserSubject.next(user);
+  }
 
   // Obtener el token
   getToken(): string | null {
@@ -36,6 +43,7 @@ export class AuthService {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     this.stopRefreshTokenTimer();
+    this.setCurrentUser(null);
   }
 
   // Verificar si el token es válido
@@ -94,17 +102,29 @@ export class AuthService {
     const token = this.getToken();
     const username = this.getUserNameFromToken();
 
-    if (!userId || !token) return of(null);
+    if (!userId || !token) {
+      this.setCurrentUser(null);
+      return of(null);
+    }
 
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
 
     return this.http.get(`${this.baseUrl}/user/${userId}/`, { headers }).pipe(
+      tap(user => {
+        this.setCurrentUser(user);
+      }),
       catchError(err => {
         console.error('Error obteniendo usuario:', err);
+        this.setCurrentUser(null);
         return of(null);
       })
     );
+  }
+
+  isAdmin(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser && currentUser.is_superuser;
   }
 }
