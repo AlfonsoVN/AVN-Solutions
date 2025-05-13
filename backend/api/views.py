@@ -301,6 +301,14 @@ def chat_view(request):
             if not db_structure:
                 return JsonResponse({'error': 'No se pudo obtener la estructura de la base de datos'}, status=500)
             
+            db_name = connection.name.split(' ~ ')[-1] if ' ~ ' in connection.name else connection.name
+            
+            if prompt == 'initialize':
+                return JsonResponse({
+                    'response': f"¡Hola! Soy tu asistente para trabajar con la base de datos '{db_name}'.",
+                    'db_name': db_name
+                })
+
             system_message = (
                 f"Eres un asistente útil que SIEMPRE responde en español. El usuario está trabajando con la base de datos con ID {database_id}. "
                 f"A continuación se muestra la estructura de la base de datos:\n\n{db_structure}\n\n"

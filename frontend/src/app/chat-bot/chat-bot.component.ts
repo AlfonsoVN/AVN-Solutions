@@ -46,18 +46,28 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
-
+  
     this.http.post('/api/chat_view/', { 
       prompt: 'initialize',
       databaseId: this.databaseId
     }, { headers }).subscribe({
       next: (response: any) => {
         console.log('Respuesta inicial recibida:', response);
-        this.messages.push({role: 'assistant', content: response.response});
+        const welcomeMessage = response.response;
+        const dbName = response.db_name;
+        
+        // Agregar un mensaje de bienvenida personalizado
+        this.messages.push({
+          role: 'assistant', 
+          content: welcomeMessage + "\n\nPuedes preguntarme sobre la estructura de la base de datos, hacer consultas o pedir ayuda para analizar los datos. ¿En qué te puedo ayudar hoy?"
+        });
+        
+        // Guardar el nombre de la base de datos si lo necesitas para uso futuro
+        // this.databaseName = dbName;
       },
       error: (error) => {
         console.error('Error al inicializar el chat:', error);
-        this.messages.push({role: 'assistant', content: 'Lo siento, hubo un error al inicializar el chat.'});
+        this.messages.push({role: 'assistant', content: 'Lo siento, hubo un error al inicializar el chat. Por favor, intenta recargar la página.'});
       }
     });
   }
