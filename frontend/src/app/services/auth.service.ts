@@ -44,15 +44,17 @@ export class AuthService {
     return token !== null && !this.jwtHelper.isTokenExpired(token);
   }
 
-  refreshToken(): Observable<any> {
+  refreshToken() {
     const refreshToken = localStorage.getItem('refresh_token');
-    return this.http.post(`${this.baseUrl}/token/refresh/`, { refresh: refreshToken }).pipe(
-      map((tokens: any) => {
-        this.setToken(tokens.access);
-        return tokens;
-      })
-    );
+    return this.http.post(`${this.baseUrl}/api/token/refresh/`, { refresh: refreshToken })
+      .pipe(
+        map((tokens: any) => {
+          this.setToken(tokens.access);
+          return tokens;
+        })
+      );
   }
+  
 
 
   private startRefreshTokenTimer() {

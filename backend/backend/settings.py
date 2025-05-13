@@ -163,3 +163,11 @@ SESSION_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
 
 GROQ_API_KEY = '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'
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # O el tiempo que prefieras
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # O el tiempo que prefieras
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
