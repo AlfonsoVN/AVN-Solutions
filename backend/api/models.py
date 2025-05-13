@@ -1,7 +1,7 @@
 # models.py
 
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.contrib.auth.hashers import make_password
 
 class Conexion(models.Model):
@@ -26,3 +26,17 @@ class SQLExecution(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.bbdd} - {self.executed_at}"
+
+class ChatMessage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    connection = models.ForeignKey(Conexion, on_delete=models.CASCADE)
+    role = models.CharField(max_length=10)  # 'user' o 'assistant'
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    sql_result = models.TextField(null=True, blank=True)  # Para almacenar resultados SQL si es necesario
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.role} - {self.timestamp}"

@@ -20,7 +20,7 @@ from .forms import ConexionForm
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import Conexion, SQLExecution  # Asegúrate de tener este modelo definido
+from .models import Conexion, SQLExecution, ChatMessage  # Asegúrate de tener este modelo definido
 from .serializers import ConexionSerializer
 from .utils import obtener_conexion  # Importa las funciones desde utils
 
@@ -286,7 +286,25 @@ def is_safe_query(query):
 @permission_classes([IsAuthenticated])
 def chat_view(request):
     logger.info("Recibida solicitud en chat_view")
-    if request.method == 'POST':
+
+    if request.method == 'GET':
+        database_id = request.GET.get('databaseId')
+        messages = ChatMessage.objects.filter(
+            user=request.user,
+            connection_id=database_id
+        ).order_by('timestamp')
+        serialized_messages = [
+            {
+                'role': msg.role,
+                'content': msg.content,
+                'sql_result': json.loads(msg.sql_result) if msg.sql_result else None
+            }
+            for msg in messages
+        ]
+        return JsonResponse({'messages': serialized_messages})
+
+
+    elif request.method == 'POST':
         data = json.loads(request.body)
         prompt = data.get('prompt')
         database_id = data.get('databaseId')
@@ -334,6 +352,14 @@ def chat_view(request):
             
             response = chat_completion.choices[0].message.content
             
+            # Guardar el mensaje del usuario
+            ChatMessage.objects.create(
+                user=request.user,
+                connection=connection,
+                role='user',
+                content=prompt
+            )
+
             sql_match = re.search(r'```sql\n(.*?)\n```', response, re.DOTALL)
             if sql_match:
                 suggested_query = sql_match.group(1).strip()
@@ -343,12 +369,34 @@ def chat_view(request):
                         result = execute_sql_query(connection, suggested_query)
                         SQLExecution.objects.create(
                             user=request.user.username, bbdd=connection.name, query=suggested_query, executed_at=datetime.now())
+                        
+                        # Guardar la respuesta del asistente con el resultado SQL
+                        ChatMessage.objects.create(
+                            user=request.user,
+                            connection=connection,
+                            role='assistant',
+                            content=response,
+                            sql_result=json.dumps(result)
+                        )
+
                         return JsonResponse({
                             'response': response,
                             'sql_result': result,
                             'show_only_table': True
                         })
                     else:
+                        # Guardar la respuesta del asistente con la advertencia
+                        ChatMessage.objects.create(
+                            user=request.user,
+                            connection=connection,
+                            role='assistant',
+                            content=response,
+                            sql_result=json.dumps({
+                                'warning': 'La consulta sugerida no es un SELECT y puede modificar la base de datos.',
+                                'suggested_query': suggested_query
+                            })
+                        )
+
                         return JsonResponse({
                             'response': response,
                             'warning': 'La consulta sugerida no es un SELECT y puede modificar la base de datos.',
@@ -357,11 +405,29 @@ def chat_view(request):
                         })
                 except Exception as e:
                     logger.error(f"Error al ejecutar la consulta SQL: {str(e)}", exc_info=True)
+                    
+                    # Guardar la respuesta del asistente con el error
+                    ChatMessage.objects.create(
+                        user=request.user,
+                        connection=connection,
+                        role='assistant',
+                        content=response,
+                        sql_result=json.dumps({'error': str(e)})
+                    )
+
                     return JsonResponse({
                         'response': response,
                         'error': f"Error al ejecutar la consulta SQL: {str(e)}"
                     }, status=500)
             
+            # Guardar la respuesta del asistente sin resultado SQL
+            ChatMessage.objects.create(
+                user=request.user,
+                connection=connection,
+                role='assistant',
+                content=response
+            )
+
             return JsonResponse({'response': response})
         except Conexion.DoesNotExist:
             return JsonResponse({'error': 'Conexión de base de datos no encontrada'}, status=404)

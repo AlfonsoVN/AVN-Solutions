@@ -8,6 +8,7 @@
     <div class="input-area">
         <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe tu mensaje...">
         <button (click)="sendMessage()">Enviar</button>
+        <button (click)="clearChat()" class="clear-chat-btn">Borrar Chat</button>
     </div>
 </div>
 <canvas #chartCanvas></canvas>

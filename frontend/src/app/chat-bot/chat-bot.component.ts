@@ -34,7 +34,20 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.databaseId = this.route.snapshot.paramMap.get('id');
-    this.initializeChat();
+    this.loadMessagesFromLocalStorage();
+    if (this.messages.length === 0) {
+      this.initializeChat();
+    } else {
+      this.loadChatHistory();
+    }
+  }
+  
+
+  private loadMessagesFromLocalStorage() {
+    const savedMessages = localStorage.getItem(`chat_messages_${this.databaseId}`);
+    if (savedMessages) {
+      this.messages = JSON.parse(savedMessages);
+    }
   }
 
   ngAfterViewInit() {
@@ -56,27 +69,29 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
         const welcomeMessage = response.response;
         const dbName = response.db_name;
         
-        // Agregar un mensaje de bienvenida personalizado
-        this.messages.push({
+        const initialMessage = {
           role: 'assistant', 
           content: welcomeMessage + "\n\nPuedes preguntarme sobre la estructura de la base de datos, hacer consultas o pedir ayuda para analizar los datos. ¿En qué te puedo ayudar hoy?"
-        });
+        };
         
-        // Guardar el nombre de la base de datos si lo necesitas para uso futuro
-        // this.databaseName = dbName;
+        this.messages.push(initialMessage);
+        this.saveMessagesToLocalStorage();
       },
       error: (error) => {
         console.error('Error al inicializar el chat:', error);
         this.messages.push({role: 'assistant', content: 'Lo siento, hubo un error al inicializar el chat. Por favor, intenta recargar la página.'});
+        this.saveMessagesToLocalStorage();
       }
     });
   }
+  
 
   
 
   sendMessage() {
     if (this.newMessage.trim()) {
-      this.messages.push({role: 'user', content: this.newMessage});
+      const userMessage = {role: 'user', content: this.newMessage};
+      this.messages.push(userMessage);
       
       const headers = new HttpHeaders({
         'Content-Type': 'application/json',
@@ -89,35 +104,55 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       }, { headers }).subscribe({
         next: (response: any) => {
           console.log('Respuesta recibida:', response);
+          let assistantMessage: any;
+  
           if (response.needs_confirmation) {
             this.dangerousQuery = response.suggested_query;
-            this.messages.push({
+            assistantMessage = {
               role: 'assistant',
               content: response.response + '\n\n' + response.warning,
               sqlResult: this.createConfirmationButton()
-            });
+            };
           } else if (response.show_only_table && response.sql_result) {
-            this.messages.push({
+            assistantMessage = {
               role: 'assistant',
               content: '',
               sqlResult: this.createTable(response.sql_result)
-            });
+            };
           } else {
-            this.messages.push({
+            assistantMessage = {
               role: 'assistant',
               content: response.response,
               sqlResult: response.sql_result ? this.createTable(response.sql_result) : undefined
-            });
+            };
           }
+  
+          this.messages.push(assistantMessage);
           this.newMessage = '';
+  
+          // Opcional: Guardar los mensajes en el almacenamiento local
+          this.saveMessagesToLocalStorage();
         },
         error: (error) => {
           console.error('Error en la solicitud:', error);
-          this.messages.push({role: 'assistant', content: 'Lo siento, hubo un error al procesar tu solicitud.'});
+          const errorMessage = {
+            role: 'assistant', 
+            content: 'Lo siento, hubo un error al procesar tu solicitud.'
+          };
+          this.messages.push(errorMessage);
+          
+          // Opcional: Guardar los mensajes en el almacenamiento local incluso en caso de error
+          this.saveMessagesToLocalStorage();
         }
       });
     }
   }
+  
+  // Método opcional para guardar mensajes en el almacenamiento local
+  private saveMessagesToLocalStorage() {
+    localStorage.setItem(`chat_messages_${this.databaseId}`, JSON.stringify(this.messages));
+  }
+  
 
   visualizeData(data: any, type: string = 'auto') {
     if (typeof data === 'string') {
@@ -267,4 +302,43 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
     // Actualizar el último mensaje con una referencia al gráfico
     this.messages[this.messages.length - 1].sqlResult = 'chart';
   }
+
+  clearChat() {
+    if (confirm('¿Estás seguro de que quieres borrar todo el historial del chat?')) {
+      this.messages = [];
+      localStorage.removeItem(`chat_messages_${this.databaseId}`);
+      this.initializeChat(); // Reinicia el chat con el mensaje de bienvenida
+    }
+  }
+  
+
+  loadChatHistory() {
+    if (this.messages.length > 0) return; // Si ya hay mensajes, no los sobrescribas
+  
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+  
+    this.http.get(`/api/chat_view/?databaseId=${this.databaseId}`, { headers }).subscribe({
+      next: (response: any) => {
+        this.messages = response.messages.map((msg: any) => ({
+          role: msg.role,
+          content: msg.content,
+          sqlResult: msg.sql_result ? this.createTable(msg.sql_result) : undefined
+        }));
+        if (this.messages.length === 0) {
+          this.initializeChat();
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar el historial del chat:', error);
+        if (this.messages.length === 0) {
+          this.initializeChat();
+        }
+      }
+    });
+  }
+  
+  
+
 }
