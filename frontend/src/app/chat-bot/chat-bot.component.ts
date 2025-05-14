@@ -37,18 +37,24 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
     this.loadMessagesFromLocalStorage();
     if (this.messages.length === 0) {
       this.initializeChat();
-    } else {
-      this.loadChatHistory();
     }
   }
+  
+  
   
 
   private loadMessagesFromLocalStorage() {
     const savedMessages = localStorage.getItem(`chat_messages_${this.databaseId}`);
     if (savedMessages) {
-      this.messages = JSON.parse(savedMessages);
+      const parsedMessages = JSON.parse(savedMessages) as Array<{role: string; content: string; sqlResult?: string}>;
+      this.messages = parsedMessages.map(message => ({
+        ...message,
+        sqlResult: message.sqlResult ? this.sanitizer.bypassSecurityTrustHtml(message.sqlResult) : undefined
+      }));
     }
   }
+  
+  
 
   ngAfterViewInit() {
     // El canvas está disponible aquí si necesitas hacer algo con él inmediatamente después de la inicialización de la vista
@@ -114,23 +120,22 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
               sqlResult: this.createConfirmationButton()
             };
           } else if (response.show_only_table && response.sql_result) {
+            const tableHtml = this.createTable(response.sql_result);
             assistantMessage = {
               role: 'assistant',
-              content: '',
-              sqlResult: this.createTable(response.sql_result)
+              content: response.response || '',
+              sqlResult: this.sanitizer.bypassSecurityTrustHtml(tableHtml)
             };
           } else {
             assistantMessage = {
               role: 'assistant',
               content: response.response,
-              sqlResult: response.sql_result ? this.createTable(response.sql_result) : undefined
+              sqlResult: response.sql_result ? this.sanitizer.bypassSecurityTrustHtml(this.createTable(response.sql_result)) : undefined
             };
           }
   
           this.messages.push(assistantMessage);
           this.newMessage = '';
-  
-          // Opcional: Guardar los mensajes en el almacenamiento local
           this.saveMessagesToLocalStorage();
         },
         error: (error) => {
@@ -140,18 +145,22 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
             content: 'Lo siento, hubo un error al procesar tu solicitud.'
           };
           this.messages.push(errorMessage);
-          
-          // Opcional: Guardar los mensajes en el almacenamiento local incluso en caso de error
           this.saveMessagesToLocalStorage();
         }
       });
     }
   }
   
+  
   // Método opcional para guardar mensajes en el almacenamiento local
   private saveMessagesToLocalStorage() {
-    localStorage.setItem(`chat_messages_${this.databaseId}`, JSON.stringify(this.messages));
+    const messagesToSave = this.messages.map(message => ({
+      ...message,
+      sqlResult: message.sqlResult ? (message.sqlResult as any).changingThisBreaksApplicationSecurity : undefined
+    }));
+    localStorage.setItem(`chat_messages_${this.databaseId}`, JSON.stringify(messagesToSave));
   }
+  
   
 
   visualizeData(data: any, type: string = 'auto') {
@@ -177,9 +186,9 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
     return 'table';
   }
 
-  createTable(data: any): SafeHtml {
+  createTable(data: any): string {
     if (!data || !data.columns || !data.rows) {
-      return this.sanitizer.bypassSecurityTrustHtml('<p>No hay datos para mostrar.</p>');
+      return '<p>No hay datos para mostrar.</p>';
     }
   
     let html = '<div class="custom-table-responsive"><div class="custom-table-container"><table class="custom-table">';
@@ -197,8 +206,10 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
     });
     html += '</tbody></table></div></div>';
     
-    return this.sanitizer.bypassSecurityTrustHtml(html);
+    return html;
   }
+  
+  
   
   
   createConfirmationButton(): SafeHtml {
