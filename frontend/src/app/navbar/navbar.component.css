@@ -11,6 +11,8 @@ body {
     position: fixed;
     top: 0;
     left: 0;
+    height: 60px;
+    z-index: 1000;
     background-color: #a3a3a3; /* Color de fondo */
     color: white;
     display: flex;

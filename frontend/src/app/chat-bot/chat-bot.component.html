@@ -1,19 +1,31 @@
 <div class="chat-layout">
     <div class="sidebar">
       <!-- Contenido de la barra lateral aquí -->
+      <br>
+      <br>
       <h2>Historial de Chats</h2>
-      <!-- Aquí puedes agregar una lista de chats anteriores o funcionalidades relacionadas -->
+      <button (click)="createNewChat()" class="new-chat-btn">Nuevo Chat</button>
+      <ul class="chat-list">
+        <li *ngFor="let chat of chats" 
+            (click)="loadChat(chat.id)"
+            [class.active]="chat.id === currentChatId">
+          <span class="chat-name">{{ chat.name }}</span>
+          <button class="delete-chat-btn" (click)="deleteChat(chat.id, $event)">
+            X
+          </button>
+        </li>
+      </ul>
     </div>
     <div class="main-content">
-      <div class="chat-container">
+      <div #chatContainer class="chat-container">
         <div class="messages">
-          <div *ngFor="let message of messages" [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}">
-            <div *ngIf="message.content" class="message-content">{{ message.content }}</div>
-            <div *ngIf="message.sqlResult" class="sql-result" [innerHTML]="message.sqlResult"></div>
-          </div>
-        </div>
+            <div *ngFor="let message of messages" [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}">
+              <div *ngIf="message.content && !message.sqlResult" class="message-content">{{ message.content }}</div>
+              <div *ngIf="message.sqlResult" class="sql-result" [innerHTML]="message.sqlResult"></div>
+            </div>
+        </div>          
       </div>
-      <div class="input-area">
+      <div #inputArea class="input-area">
         <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe tu mensaje...">
         <button (click)="sendMessage()">Enviar</button>
         <button (click)="clearChat()" class="clear-chat-btn">Borrar Chat</button>

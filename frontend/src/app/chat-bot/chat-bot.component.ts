@@ -16,12 +16,16 @@ import { Chart, ChartConfiguration, ChartType } from 'chart.js/auto';
 })
 export class ChatBotComponent implements OnInit, AfterViewInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('chatContainer') chatContainer!: ElementRef;
+  @ViewChild('inputArea') inputArea!: ElementRef;
 
   databaseId: string | null = null;
   messages: {role: string, content: string, sqlResult?: SafeHtml}[] = [];
   newMessage: string = '';
   chart: Chart | null = null;
   dangerousQuery: string | null = null;
+  chats: { id: string, name: string }[] = [];
+  currentChatId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -33,34 +37,93 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    console.log('Iniciando ngOnInit');
     this.databaseId = this.route.snapshot.paramMap.get('id');
+    console.log('Database ID:', this.databaseId);
+    this.loadChats();
+    console.log('Chats cargados:', this.chats);
+    if (this.chats.length === 0) {
+      this.createNewChat();
+    } else {
+      this.loadChat(this.chats[0].id);
+    }
+  }
+  
+  loadChats() {
+    const savedChats = localStorage.getItem(`chats_${this.databaseId}`);
+    if (savedChats) {
+      this.chats = JSON.parse(savedChats);
+    }
+  }
+
+  saveChats() {
+    localStorage.setItem(`chats_${this.databaseId}`, JSON.stringify(this.chats));
+  }
+  
+  createNewChat() {
+    const chatId = Date.now().toString();
+    const chatName = `Chat ${this.chats.length + 1}`;
+    this.chats.push({ id: chatId, name: chatName });
+    this.saveChats();
+    this.loadChat(chatId);
+  }
+
+  private lastLoadedChatId: string | null = null;
+
+  loadChat(chatId: string) {
+    if (this.lastLoadedChatId === chatId) {
+      console.log('Chat ya cargado, evitando recarga');
+      return;
+    }
+    console.log('Cargando chat:', chatId);
+    this.lastLoadedChatId = chatId;
+    this.currentChatId = chatId;
     this.loadMessagesFromLocalStorage();
+    console.log('Mensajes cargados:', this.messages);
     if (this.messages.length === 0) {
+      console.log('Inicializando chat nuevo');
       this.initializeChat();
     }
   }
-  
-  
-  
 
   private loadMessagesFromLocalStorage() {
-    const savedMessages = localStorage.getItem(`chat_messages_${this.databaseId}`);
+    const savedMessages = localStorage.getItem(`chat_messages_${this.databaseId}_${this.currentChatId}`);
     if (savedMessages) {
-      const parsedMessages = JSON.parse(savedMessages) as Array<{role: string; content: string; sqlResult?: string}>;
-      this.messages = parsedMessages.map(message => ({
+      const parsedMessages = JSON.parse(savedMessages);
+      this.messages = parsedMessages.map((message: any) => ({
         ...message,
         sqlResult: message.sqlResult ? this.sanitizer.bypassSecurityTrustHtml(message.sqlResult) : undefined
       }));
+    } else {
+      this.messages = [];
     }
   }
+  
+  
+  
   
   
 
   ngAfterViewInit() {
-    // El canvas está disponible aquí si necesitas hacer algo con él inmediatamente después de la inicialización de la vista
+    this.setupInputInteraction();
   }
 
+  setupInputInteraction() {
+    const inputArea = this.inputArea.nativeElement;
+    const chatContainer = this.chatContainer.nativeElement;
+
+    inputArea.addEventListener('focus', () => {
+      chatContainer.classList.add('fade-out');
+    });
+
+    inputArea.addEventListener('blur', () => {
+      chatContainer.classList.remove('fade-out');
+    });
+  }
+
+
   initializeChat() {
+    console.log('Iniciando chat');
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${this.authService.getToken()}`
@@ -116,22 +179,19 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
             this.dangerousQuery = response.suggested_query;
             assistantMessage = {
               role: 'assistant',
-              content: response.response + '\n\n' + response.warning,
+              content: '',
               sqlResult: this.createConfirmationButton()
             };
           } else if (response.show_only_table && response.sql_result) {
             const tableHtml = this.createTable(response.sql_result);
             assistantMessage = {
               role: 'assistant',
-              content: response.response || '',
+              content: '',
               sqlResult: this.sanitizer.bypassSecurityTrustHtml(tableHtml)
             };
           } else {
-            assistantMessage = {
-              role: 'assistant',
-              content: response.response,
-              sqlResult: response.sql_result ? this.sanitizer.bypassSecurityTrustHtml(this.createTable(response.sql_result)) : undefined
-            };
+            // Para otros tipos de respuestas, no mostramos nada
+            return;
           }
   
           this.messages.push(assistantMessage);
@@ -152,14 +212,19 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   }
   
   
+  
+  
+  
   // Método opcional para guardar mensajes en el almacenamiento local
   private saveMessagesToLocalStorage() {
     const messagesToSave = this.messages.map(message => ({
       ...message,
       sqlResult: message.sqlResult ? (message.sqlResult as any).changingThisBreaksApplicationSecurity : undefined
     }));
-    localStorage.setItem(`chat_messages_${this.databaseId}`, JSON.stringify(messagesToSave));
+    localStorage.setItem(`chat_messages_${this.databaseId}_${this.currentChatId}`, JSON.stringify(messagesToSave));
   }
+  
+  
   
   
 
@@ -210,16 +275,29 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   }
   
   
-  
-  
   createConfirmationButton(): SafeHtml {
+    console.log('Creating confirmation button');
     const html = `
-      <div class="confirmation-button">
-        <button onclick="document.dispatchEvent(new CustomEvent('executeDangerousQuery'))">Ejecutar consulta peligrosa</button>
+      <div style="color: #ff9800; margin-bottom: 10px; padding: 10px; background-color: rgba(255, 152, 0, 0.1); border-radius: 5px;">
+        ⚠️ <strong>Advertencia:</strong> Esta acción es peligrosa y modificará permanentemente la base de datos. <br>
+        ¿Está seguro de que desea continuar? Si es así, confirme haciendo clic en el siguiente botón.
+      </div>
+      <div style="margin-top: 10px;">
+        <button 
+          style="background-color: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"
+          onclick="document.dispatchEvent(new Event('executeDangerousQuery'))"
+        >
+          Ejecutar sentencia peligrosa
+        </button>
       </div>
     `;
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
+  
+  
+  
+  
+  
   
 
   executeDangerousQuery() {
@@ -236,24 +314,27 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
         next: (response: any) => {
           console.log('Respuesta de consulta peligrosa:', response);
           let content: string;
-          let sqlResult: SafeHtml | undefined;
+          let sqlResult: string = ''; // Initialize with a default value
   
           if (response.result.message) {
             content = response.result.message;
             if (response.result.table_content) {
-              sqlResult = this.createTable(response.result.table_content);
+              sqlResult = '<p style="color: #4CAF50; margin-bottom: 10px;"><strong>✅ Consulta realizada con éxito.</strong> <br> Aquí tienes los cambios realizados:</p>' +
+                this.createTable(response.result.table_content);
             }
           } else {
             content = 'Consulta peligrosa ejecutada con éxito.';
-            sqlResult = this.createTable(response.result);
+            sqlResult = '<p style="color: #4CAF50; margin-bottom: 10px;"><strong>✅ Consulta realizada con éxito.</strong> <br> Aquí tienes los cambios realizados:</p>' +
+              this.createTable(response.result);
           }
   
           this.messages.push({
             role: 'assistant',
             content: content,
-            sqlResult: sqlResult
+            sqlResult: this.sanitizer.bypassSecurityTrustHtml(sqlResult)
           });
           this.dangerousQuery = null;
+          this.saveMessagesToLocalStorage();
         },
         error: (error) => {
           console.error('Error al ejecutar la consulta peligrosa:', error);
@@ -261,10 +342,13 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
             role: 'assistant',
             content: 'Error al ejecutar la consulta peligrosa: ' + (error.error.error || error.message)
           });
+          this.saveMessagesToLocalStorage();
         }
       });
     }
   }
+  
+  
   
   
   
@@ -349,7 +433,22 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       }
     });
   }
-  
-  
+
+  deleteChat(chatId: string, event: Event) {
+    event.stopPropagation(); // Evita que se active el chat al hacer clic en el botón de eliminar
+    if (confirm('¿Estás seguro de que quieres eliminar este chat?')) {
+      this.chats = this.chats.filter(chat => chat.id !== chatId);
+      localStorage.removeItem(`chat_messages_${this.databaseId}_${chatId}`);
+      this.saveChats();
+      
+      if (this.currentChatId === chatId) {
+        if (this.chats.length > 0) {
+          this.loadChat(this.chats[0].id);
+        } else {
+          this.createNewChat();
+        }
+      }
+    }
+  }
 
 }
