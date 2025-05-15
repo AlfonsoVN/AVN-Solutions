@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Chart, ChartConfiguration, ChartType } from 'chart.js/auto';
@@ -20,6 +20,8 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   @ViewChild('inputArea') inputArea!: ElementRef;
 
   databaseId: string | null = null;
+  selectedConnectionId: string | null = null;
+  connections: any[] = [];
   messages: {role: string, content: string, sqlResult?: SafeHtml}[] = [];
   newMessage: string = '';
   chart: Chart | null = null;
@@ -29,6 +31,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private http: HttpClient,
     private authService: AuthService,
     private sanitizer: DomSanitizer
@@ -37,17 +40,54 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    console.log('Iniciando ngOnInit');
-    this.databaseId = this.route.snapshot.paramMap.get('id');
-    console.log('Database ID:', this.databaseId);
+    this.loadConnections();
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.selectedConnectionId = id;
+        this.loadChatsForConnection(id);
+      }
+    });
+  }
+  
+  loadConnections() {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+  
+    this.http.get<any[]>('http://localhost:8000/api/get-connections/', { headers })
+      .subscribe({
+        next: (data) => {
+          this.connections = data;
+          if (this.connections.length > 0 && !this.selectedConnectionId) {
+            this.onConnectionChange(this.connections[0].id);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading connections:', error);
+        }
+      });
+  }
+  
+  onConnectionChange(connectionId: string) {
+    this.router.navigate(['/chat-bot', connectionId]);
+  }
+  
+  loadChatsForConnection(connectionId: string) {
+    this.selectedConnectionId = connectionId;
+    this.chats = [];
+    this.messages = [];
+    this.currentChatId = null;
+    this.databaseId = connectionId;
+  
     this.loadChats();
-    console.log('Chats cargados:', this.chats);
     if (this.chats.length === 0) {
       this.createNewChat();
     } else {
       this.loadChat(this.chats[0].id);
     }
   }
+  
   
   loadChats() {
     const savedChats = localStorage.getItem(`chats_${this.databaseId}`);
@@ -87,7 +127,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   }
 
   private loadMessagesFromLocalStorage() {
-    const savedMessages = localStorage.getItem(`chat_messages_${this.databaseId}_${this.currentChatId}`);
+    const savedMessages = localStorage.getItem(`chat_messages_${this.selectedConnectionId}_${this.currentChatId}`);
     if (savedMessages) {
       const parsedMessages = JSON.parse(savedMessages);
       this.messages = parsedMessages.map((message: any) => ({
@@ -131,7 +171,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   
     this.http.post('/api/chat_view/', { 
       prompt: 'initialize',
-      databaseId: this.databaseId
+      databaseId: this.selectedConnectionId
     }, { headers }).subscribe({
       next: (response: any) => {
         console.log('Respuesta inicial recibida:', response);
@@ -169,7 +209,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   
       this.http.post('/api/chat_view/', { 
         prompt: this.newMessage,
-        databaseId: this.databaseId
+        databaseId: this.selectedConnectionId
       }, { headers }).subscribe({
         next: (response: any) => {
           console.log('Respuesta recibida:', response);
@@ -189,9 +229,18 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
               content: '',
               sqlResult: this.sanitizer.bypassSecurityTrustHtml(tableHtml)
             };
+          } else if (response.response) {
+            // Manejar respuestas de texto simples
+            assistantMessage = {
+              role: 'assistant',
+              content: response.response
+            };
           } else {
             // Para otros tipos de respuestas, no mostramos nada
-            return;
+            assistantMessage = {
+              role: 'assistant',
+              content: 'Lo siento, no pude procesar esa solicitud.'
+            };
           }
   
           this.messages.push(assistantMessage);
@@ -221,7 +270,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       ...message,
       sqlResult: message.sqlResult ? (message.sqlResult as any).changingThisBreaksApplicationSecurity : undefined
     }));
-    localStorage.setItem(`chat_messages_${this.databaseId}_${this.currentChatId}`, JSON.stringify(messagesToSave));
+    localStorage.setItem(`chat_messages_${this.selectedConnectionId}_${this.currentChatId}`, JSON.stringify(messagesToSave));
   }
   
   
@@ -309,7 +358,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   
       this.http.post('/api/execute_dangerous_query/', {
         query: this.dangerousQuery,
-        databaseId: this.databaseId
+        databaseId: this.selectedConnectionId
       }, { headers }).subscribe({
         next: (response: any) => {
           console.log('Respuesta de consulta peligrosa:', response);

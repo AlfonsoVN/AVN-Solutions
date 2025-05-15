@@ -289,4 +289,14 @@ html, body {
     color: #ff0000;
   }
   
+  .connection-selector {
+    margin-bottom: 20px;
+  }
+  
+  .connection-selector select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
   

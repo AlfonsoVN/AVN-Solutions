@@ -3,6 +3,14 @@
       <!-- Contenido de la barra lateral aquí -->
       <br>
       <br>
+      <div class="connection-selector">
+        <select [(ngModel)]="selectedConnectionId" (ngModelChange)="onConnectionChange($event)">
+          <option *ngFor="let conn of connections" [value]="conn.id">
+            {{ conn.name }}
+          </option>
+        </select>
+      </div>
+      
       <h2>Historial de Chats</h2>
       <button (click)="createNewChat()" class="new-chat-btn">Nuevo Chat</button>
       <ul class="chat-list">
