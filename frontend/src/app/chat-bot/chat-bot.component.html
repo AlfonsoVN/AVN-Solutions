@@ -1,3 +1,6 @@
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
 <div class="chat-layout">
     <div class="sidebar">
       <!-- Contenido de la barra lateral aquí -->
@@ -5,21 +8,26 @@
       <br>
       <div class="connection-selector">
         <select [(ngModel)]="selectedConnectionId" (ngModelChange)="onConnectionChange($event)">
-          <option *ngFor="let conn of connections" [value]="conn.id">
+        <option *ngFor="let conn of connections" [value]="conn.id">
             {{ conn.name }}
-          </option>
+        </option>
         </select>
-      </div>
-      
+    </div>
+    <br>
+    <div class="connection-controls">
+        <button (click)="createNewChat()" class="new-chat-btn">Nuevo Chat</button>
+        <button (click)="clearChat()" class="clear-chat-btn">Borrar Chat</button>
+    </div>
       <h2>Historial de Chats</h2>
-      <button (click)="createNewChat()" class="new-chat-btn">Nuevo Chat</button>
+      
       <ul class="chat-list">
         <li *ngFor="let chat of chats" 
             (click)="loadChat(chat.id)"
             [class.active]="chat.id === currentChatId">
+          
           <span class="chat-name">{{ chat.name }}</span>
           <button class="delete-chat-btn" (click)="deleteChat(chat.id, $event)">
-            X
+            <i class="fas fa-times"></i>
           </button>
         </li>
       </ul>
@@ -36,7 +44,6 @@
       <div #inputArea class="input-area">
         <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Escribe tu mensaje...">
         <button (click)="sendMessage()">Enviar</button>
-        <button (click)="clearChat()" class="clear-chat-btn">Borrar Chat</button>
       </div>
     </div>
   </div>

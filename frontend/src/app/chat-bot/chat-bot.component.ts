@@ -55,7 +55,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
   
-    this.http.get<any[]>('http://localhost:8000/api/get-connections/', { headers })
+    this.http.get<any[]>('/api/get-connections/', { headers })
       .subscribe({
         next: (data) => {
           this.connections = data;
@@ -231,9 +231,11 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
             };
           } else if (response.response) {
             // Manejar respuestas de texto simples
+            const formattedResponse = this.formatResponseAsTable(response.response);
             assistantMessage = {
               role: 'assistant',
-              content: response.response
+              content: '',
+              sqlResult: this.sanitizer.bypassSecurityTrustHtml(formattedResponse)
             };
           } else {
             // Para otros tipos de respuestas, no mostramos nada
@@ -261,6 +263,22 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   }
   
   
+  formatResponseAsTable(response: string): string {
+    const lines = response.split('\n');
+    let html = '<table class="custom-table">';
+    html += '<thead><tr><th>Tablas de la base de datos</th></tr></thead>';
+    html += '<tbody>';
+    
+    lines.forEach(line => {
+      if (line.trim()) {
+        const tableName = line.replace(/^\d+\.\s*\*\*(.*)\*\*$/, '$1').trim();
+        html += `<tr><td>${tableName}</td></tr>`;
+      }
+    });
+    
+    html += '</tbody></table>';
+    return html;
+  }
   
   
   
@@ -305,23 +323,61 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       return '<p>No hay datos para mostrar.</p>';
     }
   
-    let html = '<div class="custom-table-responsive"><div class="custom-table-container"><table class="custom-table">';
+    const tableContainerStyle = `
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    `;
+  
+    const tableStyle = `
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Arial, sans-serif;
+    `;
+  
+    const thStyle = `
+      position: sticky;
+      top: 0;
+      background-color: #2a2a3f;
+      color: #ffffff;
+      text-align: left;
+      padding: 12px 15px;
+    `;
+  
+    const tdStyle = `
+      padding: 12px 15px;
+      border-bottom: 1px solid #dddddd;
+    `;
+  
+    const trEvenStyle = `background-color: #f3f3f3;`;
+    const trHoverStyle = `background-color: #f5f5f5;`;
+  
+    let html = `<div style="${tableContainerStyle}">
+                 <table style="${tableStyle}">`;
+    
     html += '<thead><tr>';
     data.columns.forEach((column: string) => {
-      html += `<th>${column}</th>`;
+      html += `<th style="${thStyle}">${column}</th>`;
     });
     html += '</tr></thead><tbody>';
-    data.rows.forEach((row: any) => {
-      html += '<tr>';
+  
+    data.rows.forEach((row: any, index: number) => {
+      const rowStyle = index % 2 === 0 ? trEvenStyle : '';
+      html += `<tr style="${rowStyle}" onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='${index % 2 === 0 ? '#f3f3f3' : '#fff'}'">`;
       data.columns.forEach((column: string) => {
-        html += `<td>${row[column]}</td>`;
+        html += `<td style="${tdStyle}">${row[column]}</td>`;
       });
       html += '</tr>';
     });
-    html += '</tbody></table></div></div>';
+  
+    html += '</tbody></table></div>';
     
     return html;
   }
+  
+  
   
   
   createConfirmationButton(): SafeHtml {
