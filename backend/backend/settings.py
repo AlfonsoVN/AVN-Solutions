@@ -130,7 +130,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+ 
+# Añade esta línea:
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+ 
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -165,7 +170,7 @@ CSRF_HEADER_NAME = "X-CSRFToken"
 # Seguridad en cookies de sesión
 SESSION_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
 
-GROQ_API_KEY = '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'
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
 from datetime import timedelta
 
