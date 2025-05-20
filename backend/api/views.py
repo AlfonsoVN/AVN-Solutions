@@ -20,7 +20,7 @@ from .forms import ConexionForm
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, BasePermission
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import Conexion, DangerousQuery, SQLExecution, ChatMessage  # Asegúrate de tener este modelo definido
+from .models import Conexion, DangerousQuery, SQLExecution, ChatMessage, TestDatabase  # Asegúrate de tener este modelo definido
 from .serializers import ConexionSerializer, DangerousQuerySerializer
 from .utils import obtener_conexion  # Importa las funciones desde utils
 
@@ -286,39 +286,20 @@ def is_safe_query(query):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def chat_view(request):
-    logger.info("Recibida solicitud en chat_view")
-
-    if request.method == 'GET':
-        database_id = request.GET.get('databaseId')
-        messages = ChatMessage.objects.filter(
-            user=request.user,
-            connection_id=database_id
-        ).order_by('timestamp')
-        serialized_messages = [
-            {
-                'role': msg.role,
-                'content': msg.content,
-                'sql_result': json.loads(msg.sql_result) if msg.sql_result else None
-            }
-            for msg in messages
-        ]
-        return JsonResponse({'messages': serialized_messages})
-
-
-    elif request.method == 'POST':
+    if request.method == 'POST':
         data = json.loads(request.body)
         prompt = data.get('prompt')
         database_id = data.get('databaseId')
 
-        logger.info(f"Prompt recibido: {prompt}")
-        logger.info(f"Database ID: {database_id}")
-        
         try:
             connection = Conexion.objects.get(id=database_id)
-            db_structure = extract_sql_structure(connection)
             
-            if not db_structure:
-                return JsonResponse({'error': 'No se pudo obtener la estructura de la base de datos'}, status=500)
+            # Obtener solo los nombres de las tablas
+            engine = create_engine(obtener_conexion(connection))
+            inspector = inspect(engine)
+            tables = inspector.get_table_names()
+            
+            db_structure = "Tablas en la base de datos:\n" + "\n".join(tables)
             
             db_name = connection.name.split(' ~ ')[-1] if ' ~ ' in connection.name else connection.name
             
@@ -328,11 +309,19 @@ def chat_view(request):
                     'db_name': db_name
                 })
 
+            # Si la pregunta es sobre las tablas, devuelve directamente la lista de tablas
+            if "tablas" in prompt.lower() and "base de datos" in prompt.lower():
+                return JsonResponse({
+                    'response': f"Las tablas en la base de datos '{db_name}' son:\n{', '.join(tables)}"
+                })
+
             system_message = (
-                f"Eres un asistente útil que SIEMPRE responde en español. El usuario está trabajando con la base de datos con ID {database_id}. "
-                f"A continuación se muestra la estructura de la base de datos:\n\n{db_structure}\n\n"
-                "Ten siempre en cuenta esta estructura de base de datos en tus respuestas y utilízala para proporcionar información precisa. "
-                "Si el usuario pide ver registros o ejecutar una consulta, proporciona la consulta SQL apropiada entre comillas triples ```."
+                f"Eres un asistente útil que SIEMPRE responde en español. El usuario está trabajando con la base de datos '{db_name}'. "
+                f"A continuación se muestran las tablas de la base de datos:\n\n{db_structure}\n\n"
+                "Si el usuario pregunta por las tablas de la base de datos, muestra solo los nombres de las tablas sin información adicional. "
+                "Si el usuario pide ver registros, proporciona una consulta SELECT apropiada entre comillas triples ```. "
+                "Si el usuario pide modificar, eliminar o insertar datos, proporciona la consulta SQL apropiada entre comillas triples ``` "
+                "y advierte que es una operación peligrosa que requiere confirmación."
             )
             
             if connection.info_adicional:
@@ -439,6 +428,7 @@ def chat_view(request):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def execute_dangerous_query(request):
@@ -543,4 +533,94 @@ def get_users(request):
     ]
     print("Enviando respuesta con datos de usuarios")
     return Response(user_data)
+
+import sqlite3
+
+@csrf_exempt
+def test_database_query(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            prompt = data.get('prompt')
+            
+            test_db = TestDatabase.objects.first()
+            if not test_db:
+                return JsonResponse({'error': 'Test database not found'}, status=404)
+
+            conn = sqlite3.connect(':memory:')
+            cursor = conn.cursor()
+            cursor.executescript(test_db.script)
+
+            # Obtener solo los nombres de las tablas
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = [table[0] for table in cursor.fetchall()]
+            
+            db_structure = "Tablas en la base de datos:\n" + "\n".join(tables)
+
+            system_message = (
+                f"Eres un asistente útil que SIEMPRE responde en español. El usuario está trabajando con una base de datos de prueba. "
+                f"A continuación se muestran las tablas de la base de datos:\n\n{db_structure}\n\n"
+                "Si el usuario pregunta por las tablas de la base de datos, muestra solo los nombres de las tablas sin información adicional. "
+                "Si el usuario pide ver registros, proporciona una consulta SELECT apropiada entre comillas triples ```. "
+                "Si el usuario pide modificar, eliminar o insertar datos, proporciona la consulta SQL apropiada entre comillas triples ``` "
+                "y advierte que es una operación peligrosa que requiere confirmación."
+            )
+
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt}
+                ],
+                model="llama-3.1-8b-instant", 
+            )
+            
+            response = chat_completion.choices[0].message.content
+
+            # Si la pregunta es sobre las tablas, devuelve directamente la lista de tablas
+            if "tablas" in prompt.lower() and "base de datos" in prompt.lower():
+                return JsonResponse({
+                    'response': f"Las tablas en la base de datos son:\n{', '.join(tables)}"
+                })
+
+            sql_match = re.search(r'```sql\n(.*?)\n```', response, re.DOTALL)
+            if sql_match:
+                suggested_query = sql_match.group(1).strip()
+                is_safe = is_safe_query(suggested_query)
+                try:
+                    if is_safe:
+                        cursor.execute(suggested_query)
+                        columns = [description[0] for description in cursor.description]
+                        rows = cursor.fetchall()
+                        
+                        result = {
+                            'columns': columns,
+                            'rows': [dict(zip(columns, row)) for row in rows]
+                        }
+
+                        return JsonResponse({
+                            'response': response,
+                            'sql_result': result
+                        })
+                    else:
+                        return JsonResponse({
+                            'response': response,
+                            'warning': 'La consulta sugerida no es un SELECT y puede modificar la base de datos.',
+                            'suggested_query': suggested_query,
+                            'needs_confirmation': True
+                        })
+                except Exception as e:
+                    return JsonResponse({
+                        'response': response,
+                        'error': f"Error al ejecutar la consulta SQL: {str(e)}"
+                    }, status=500)
+            
+            return JsonResponse({'response': response})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 

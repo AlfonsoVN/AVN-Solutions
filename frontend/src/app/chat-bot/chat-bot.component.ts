@@ -28,6 +28,8 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   dangerousQuery: string | null = null;
   chats: { id: string, name: string }[] = [];
   currentChatId: string | null = null;
+  isTestDatabase: boolean = false;
+  isAuthenticated: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,33 +42,41 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.isAuthenticated = this.authService.isLoggedIn();
     this.loadConnections();
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.selectedConnectionId = id;
+        this.isTestDatabase = id === 'test';
         this.loadChatsForConnection(id);
+      } else if (!this.isAuthenticated) {
+        this.router.navigate(['/chat-bot', 'test']);
       }
     });
   }
   
   loadConnections() {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getToken()}`
-    });
-  
-    this.http.get<any[]>('/api/get-connections/', { headers })
-      .subscribe({
-        next: (data) => {
-          this.connections = data;
-          if (this.connections.length > 0 && !this.selectedConnectionId) {
-            this.onConnectionChange(this.connections[0].id);
-          }
-        },
-        error: (error) => {
-          console.error('Error loading connections:', error);
-        }
+    if (this.isAuthenticated) {
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${this.authService.getToken()}`
       });
+    
+      this.http.get<any[]>('/api/get-connections/', { headers })
+        .subscribe({
+          next: (data) => {
+            this.connections = data;
+            if (this.connections.length > 0 && !this.selectedConnectionId) {
+              this.onConnectionChange(this.connections[0].id);
+            }
+          },
+          error: (error) => {
+            console.error('Error loading connections:', error);
+          }
+        });
+    } else {
+      this.connections = [{ id: 'test', name: 'Base de Datos de Prueba' }];
+    }
   }
   
   onConnectionChange(connectionId: string) {
@@ -164,35 +174,45 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
 
   initializeChat() {
     console.log('Iniciando chat');
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.authService.getToken()}`
-    });
+    if (this.isTestDatabase) {
+      const initialMessage = {
+        role: 'assistant',
+        content: "Bienvenido a tu asistente de base de datos. Te ayudaré con cualquier duda sobre 'Base de Datos de Prueba'."
+      };
+      this.messages.push(initialMessage);
+      this.saveMessagesToLocalStorage();
+    } else {
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.authService.getToken()}`
+      });
   
-    this.http.post('/api/chat_view/', { 
-      prompt: 'initialize',
-      databaseId: this.selectedConnectionId
-    }, { headers }).subscribe({
-      next: (response: any) => {
-        console.log('Respuesta inicial recibida:', response);
-        const welcomeMessage = response.response;
-        const dbName = response.db_name;
-        
-        const initialMessage = {
-          role: 'assistant', 
-          content: welcomeMessage + "\n\nPuedes preguntarme sobre la estructura de la base de datos, hacer consultas o pedir ayuda para analizar los datos. ¿En qué te puedo ayudar hoy?"
-        };
-        
-        this.messages.push(initialMessage);
-        this.saveMessagesToLocalStorage();
-      },
-      error: (error) => {
-        console.error('Error al inicializar el chat:', error);
-        this.messages.push({role: 'assistant', content: 'Lo siento, hubo un error al inicializar el chat. Por favor, intenta recargar la página.'});
-        this.saveMessagesToLocalStorage();
-      }
-    });
+      this.http.post('/api/chat_view/', { 
+        prompt: 'initialize',
+        databaseId: this.selectedConnectionId
+      }, { headers }).subscribe({
+        next: (response: any) => {
+          console.log('Respuesta inicial recibida:', response);
+          const welcomeMessage = response.response;
+          const dbName = response.db_name;
+          
+          const initialMessage = {
+            role: 'assistant', 
+            content: welcomeMessage + "\n\nPuedes preguntarme sobre la estructura de la base de datos, hacer consultas o pedir ayuda para analizar los datos. ¿En qué te puedo ayudar hoy?"
+          };
+          
+          this.messages.push(initialMessage);
+          this.saveMessagesToLocalStorage();
+        },
+        error: (error) => {
+          console.error('Error al inicializar el chat:', error);
+          this.messages.push({role: 'assistant', content: 'Lo siento, hubo un error al inicializar el chat. Por favor, intenta recargar la página.'});
+          this.saveMessagesToLocalStorage();
+        }
+      });
+    }
   }
+  
   
 
   
@@ -202,12 +222,13 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       const userMessage = {role: 'user', content: this.newMessage};
       this.messages.push(userMessage);
       
+      const endpoint = this.isTestDatabase ? 'http://localhost:8000/api/test-database-query/' : '/api/chat_view/';
       const headers = new HttpHeaders({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.authService.getToken()}`
+        'Authorization': this.isTestDatabase ? '' : `Bearer ${this.authService.getToken()}`
       });
   
-      this.http.post('/api/chat_view/', { 
+      this.http.post(endpoint, { 
         prompt: this.newMessage,
         databaseId: this.selectedConnectionId
       }, { headers }).subscribe({
@@ -219,29 +240,22 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
             this.dangerousQuery = response.suggested_query;
             assistantMessage = {
               role: 'assistant',
-              content: '',
-              sqlResult: this.createConfirmationButton()
+              content: response.response,
+              sqlResult: this.isTestDatabase ? 
+                this.createTestDatabaseWarning() : 
+                this.createConfirmationButton()
             };
-          } else if (response.show_only_table && response.sql_result) {
+          } else if (response.sql_result) {
             const tableHtml = this.createTable(response.sql_result);
             assistantMessage = {
               role: 'assistant',
-              content: '',
+              content: response.response,
               sqlResult: this.sanitizer.bypassSecurityTrustHtml(tableHtml)
             };
-          } else if (response.response) {
-            // Manejar respuestas de texto simples
-            const formattedResponse = this.formatResponseAsTable(response.response);
-            assistantMessage = {
-              role: 'assistant',
-              content: '',
-              sqlResult: this.sanitizer.bypassSecurityTrustHtml(formattedResponse)
-            };
           } else {
-            // Para otros tipos de respuestas, no mostramos nada
             assistantMessage = {
               role: 'assistant',
-              content: 'Lo siento, no pude procesar esa solicitud.'
+              content: response.response
             };
           }
   
@@ -260,6 +274,24 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
         }
       });
     }
+  }
+  
+  createTestDatabaseWarning(): SafeHtml {
+    const html = `
+      <div style="color: #ff9800; margin-bottom: 10px; padding: 10px; background-color: rgba(255, 152, 0, 0.1); border-radius: 5px;">
+        ⚠️ <strong>Advertencia:</strong> Esta acción no está permitida en la base de datos de prueba. <br>
+        Para realizar modificaciones en bases de datos, necesitas iniciar sesión y usar tus propias conexiones.
+      </div>
+      <div style="margin-top: 10px;">
+        <button 
+          style="background-color: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"
+          onclick="window.location.href='/login'"
+        >
+          Iniciar sesión
+        </button>
+      </div>
+    `;
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
   
   

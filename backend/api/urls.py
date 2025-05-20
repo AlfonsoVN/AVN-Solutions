@@ -23,6 +23,7 @@ urlpatterns = [
     path('execute_dangerous_query/', views.execute_dangerous_query, name='execute_dangerous_query'),
     path('dangerous-queries/', views.get_dangerous_queries, name='get_dangerous_queries'),
     path('users/', views.get_users, name='get_users'),
+    path('test-database-query/', views.test_database_query, name='test_database_query'),
 
 ]
 
