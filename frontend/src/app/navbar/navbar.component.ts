@@ -96,7 +96,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       return;
     }
 
-    fetch('http://localhost:8000/api/register/', {
+    fetch('https://avn-solutions.onrender.com/api/register/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(this.userData),
@@ -118,7 +118,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       password: this.userData.password,
     };
 
-    fetch('http://localhost:8000/api/token/', {
+    fetch('https://avn-solutions.onrender.com/api/token/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(loginPayload),

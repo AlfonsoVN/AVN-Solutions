@@ -34,7 +34,7 @@ export class StartChatComponent implements OnInit {
         'Authorization': `Bearer ${this.authService.getToken()}`
       });
 
-      this.http.get<any[]>('http://localhost:8000/api/get-connections/', { headers })
+      this.http.get<any[]>('https://avn-solutions.onrender.com/api/get-connections/', { headers })
         .subscribe({
           next: (data) => {
             this.databases = data;

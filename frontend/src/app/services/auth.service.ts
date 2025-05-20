@@ -10,7 +10,7 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = 'http://localhost:8000/api';
+  private baseUrl = 'https://avn-solutions.onrender.com/api';
   private jwtHelper = new JwtHelperService();
   private refreshTokenTimeout: any;
   private currentUser: any = null;

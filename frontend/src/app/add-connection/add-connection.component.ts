@@ -15,7 +15,7 @@ import { AuthService } from '../services/auth.service';
 })
 export class AddConnectionComponent {  // Cambiado el nombre de la clase
   conexionForm: FormGroup;
-  apiUrl = 'http://localhost:8000/api/test_connection/'; // Endpoint de Django
+  apiUrl = 'https://avn-solutions.onrender.com/api/test_connection/'; // Endpoint de Django
   connectionSuccessful: boolean = false;
 
   constructor(private fb: FormBuilder, private http: HttpClient, private authService: AuthService) {
@@ -68,7 +68,7 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
       const headers = this.getHeaders();
   
       this.http.post<{ exito: boolean, mensaje?: string }>(
-        'http://localhost:8000/api/anadir_conexion/',
+        'https://avn-solutions.onrender.com/api/anadir_conexion/',
         this.conexionForm.value, // Convertimos a JSON
         { headers }
       ).subscribe({

@@ -222,7 +222,7 @@ export class ChatBotComponent implements OnInit, AfterViewInit {
       const userMessage = {role: 'user', content: this.newMessage};
       this.messages.push(userMessage);
       
-      const endpoint = this.isTestDatabase ? 'http://localhost:8000/api/test-database-query/' : '/api/chat_view/';
+      const endpoint = this.isTestDatabase ? 'https://avn-solutions.onrender.com/api/test-database-query/' : '/api/chat_view/';
       const headers = new HttpHeaders({
         'Content-Type': 'application/json',
         'Authorization': this.isTestDatabase ? '' : `Bearer ${this.authService.getToken()}`

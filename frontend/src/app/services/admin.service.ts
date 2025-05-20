@@ -14,14 +14,14 @@ export class AdminService {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
-    return this.http.get('http://localhost:8000/api/dangerous-queries/', { headers });
+    return this.http.get('https://avn-solutions.onrender.com/api/dangerous-queries/', { headers });
   }
   
   getUsers(): Observable<any> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
-    return this.http.get('http://localhost:8000/api/users/', { headers });
+    return this.http.get('https://avn-solutions.onrender.com/api/users/', { headers });
   }
   
 }

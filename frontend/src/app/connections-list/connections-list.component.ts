@@ -45,7 +45,7 @@ export class ConnectionsListComponent implements OnInit {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
-    return this.http.get<any[]>('http://localhost:8000/api/get-connections/', { headers });
+    return this.http.get<any[]>('https://avn-solutions.onrender.com/api/get-connections/', { headers });
   }
 
   editConnection() {
@@ -54,7 +54,7 @@ export class ConnectionsListComponent implements OnInit {
         'Authorization': `Bearer ${this.authService.getToken()}`
       });
       this.http
-        .put<any>(`http://localhost:8000/api/edit-connection/${this.editConnectionData.id}/`, this.editConnectionData, { headers })
+        .put<any>(`https://avn-solutions.onrender.com/api/edit-connection/${this.editConnectionData.id}/`, this.editConnectionData, { headers })
         .subscribe({
           next: () => {
             alert('Conexión actualizada correctamente');
@@ -111,7 +111,7 @@ export class ConnectionsListComponent implements OnInit {
         'Authorization': `Bearer ${this.authService.getToken()}`
       });
   
-      this.http.delete(`http://localhost:8000/api/delete-connection/${id}/`, { headers }).subscribe({
+      this.http.delete(`https://avn-solutions.onrender.com/api/delete-connection/${id}/`, { headers }).subscribe({
         next: () => {
           this.connections = this.connections.filter(conexion => conexion.id !== id);
           alert('Conexión eliminada correctamente');

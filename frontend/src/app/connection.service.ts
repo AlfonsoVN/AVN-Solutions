@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ConexionService {
-  apiUrl = 'http://localhost:8000/api/';
+  apiUrl = 'https://avn-solutions.onrender.com/api/';
 
   constructor(private http: HttpClient) {}
 
