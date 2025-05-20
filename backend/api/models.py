@@ -40,3 +40,12 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.role} - {self.timestamp}"
+
+    
+class DangerousQuery(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    query = models.TextField()
+    executed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.executed_at}"

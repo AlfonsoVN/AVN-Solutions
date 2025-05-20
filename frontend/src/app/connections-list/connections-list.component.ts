@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
+import { ModalService } from '../services/modal.service';
 
 @Component({
   selector: 'app-connections-list',
@@ -17,8 +19,18 @@ export class ConnectionsListComponent implements OnInit {
   isEditModalOpen = false;
   editConnectionData: any = {};
   hasToken = false;
+  testConnection = {
+    id: 'test',
+    name: 'Conexión de Prueba',
+    host: 'localhost',
+    db_type: 'MySQL',
+    port: 3306,
+    dbname: 'zoodb',
+    user: 'root',
+    password: 'root'
+  };
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService, private modalService: ModalService) {}
 
   ngOnInit(): void {
     this.hasToken = this.authService.isLoggedIn();
@@ -58,31 +70,62 @@ export class ConnectionsListComponent implements OnInit {
     }
   }
 
+  openSignInModal(event: Event) {
+    event.preventDefault();
+    this.modalService.openSignInModal();
+  }
+
+  openRegisterModal(event: Event) {
+    event.preventDefault();
+    this.modalService.openRegisterModal();
+  }
+
   openEditModal(connection: any) {
-    this.editConnectionData = { ...connection };
-    this.isEditModalOpen = true;
+    if (this.hasToken) {
+      this.editConnectionData = { ...connection };
+      this.isEditModalOpen = true;
+    } else {
+      alert('Inicia sesión para editar conexiones.');
+    }
   }
 
   closeEditModal() {
     this.isEditModalOpen = false;
   }
 
-  deleteConnection(id: number): void {
+  deleteConnection(id: number | string): void {
+    if (id === 'test') {
+      alert('Esta es una conexión de prueba y no puede ser eliminada. Inicia sesión para gestionar conexiones reales.');
+      return;
+    }
+  
+    if (!this.hasToken) {
+      alert('Inicia sesión para eliminar conexiones.');
+      return;
+    }
+  
     const confirmation = window.confirm("¿Estás seguro de que deseas eliminar esta conexión?");
     
     if (confirmation) {
       const headers = new HttpHeaders({
         'Authorization': `Bearer ${this.authService.getToken()}`
       });
+  
       this.http.delete(`http://localhost:8000/api/delete-connection/${id}/`, { headers }).subscribe({
         next: () => {
           this.connections = this.connections.filter(conexion => conexion.id !== id);
           alert('Conexión eliminada correctamente');
         },
         error: (err) => {
-          alert('Error al eliminar la conexión: ' + err.message);
+          console.error('Error al eliminar la conexión:', err);
+          if (err.status === 404) {
+            alert('La conexión no fue encontrada. Puede que ya haya sido eliminada.');
+          } else {
+            alert('Error al eliminar la conexión: ' + (err.error?.mensaje || err.message || 'Error desconocido'));
+          }
         }
       });
     }
   }
+  
 }

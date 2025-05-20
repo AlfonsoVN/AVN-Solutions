@@ -26,8 +26,9 @@
   </nav>
 
   <!-- Modal de Registro -->
-  <div class="modal" [ngClass]="{ open: isRegisterModalOpen }" (click)="closeRegisterModal()">
+  <div class="modal" [class.open]="isRegisterModalOpen" (click)="closeRegisterModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
+      <span class="close-btn" (click)="closeRegisterModal()">&times;</span>
       <h2>Crear Cuenta</h2>
       <form (ngSubmit)="registerUser()">
         <div class="form-group">
@@ -61,8 +62,9 @@
   </div>
 
   <!-- Modal de Iniciar sesión -->
-  <div class="modal" [ngClass]="{ open: isSignInModalOpen }" (click)="closeSignInModal()">
+  <div class="modal" [class.open]="isSignInModalOpen" (click)="closeSignInModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
+      <span class="close-btn" (click)="closeSignInModal()">&times;</span>
       <h2>Iniciar Sesión</h2>
       <form (ngSubmit)="signInUser()">
         <div class="form-group">

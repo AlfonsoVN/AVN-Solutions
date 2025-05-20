@@ -1,14 +1,17 @@
 <div class="start-chat-container">
-    <h2>Iniciar Chat</h2>
-    <div *ngIf="databases.length > 0; else noDatabases">
-      <select [(ngModel)]="selectedDatabase">
-        <option value="">Selecciona una base de datos</option>
-        <option *ngFor="let db of databases" [value]="db.id">{{ db.name }}</option>
-      </select>
-      <button (click)="startChat()" [disabled]="!selectedDatabase">Iniciar Chat</button>
-    </div>
-    <ng-template #noDatabases>
-      <p>No tienes bases de datos disponibles.</p>
-    </ng-template>
+  <h2>Selecciona la conexión</h2>
+  <div *ngIf="databases.length > 0; else noDatabases" class="connection-selection">
+    <select [(ngModel)]="selectedDatabase">
+      <option value="">Selecciona una base de datos</option>
+      <option *ngFor="let db of databases" [value]="db.id">{{ db.name }}</option>
+    </select>
+    <button (click)="startChat()" [disabled]="!selectedDatabase">Iniciar Chat</button>
   </div>
-  
+  <ng-template #noDatabases>
+    <p>No tienes bases de datos disponibles.</p>
+  </ng-template>
+
+  <div *ngIf="!isLoggedIn" class="login-message">
+    <p>Estás utilizando una conexión de prueba. Para acceder a tus propias conexiones, por favor inicia sesión.</p>
+  </div>
+</div>

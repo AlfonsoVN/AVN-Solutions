@@ -1,11 +1,11 @@
 <ng-template #noTokenTemplate>
   <div class="no-token-msg">
-    <p>No tienes permiso para ver esta página. Por favor, inicia sesión.</p>
+    <p>Inicia sesión para ver y gestionar tus conexiones. Aquí tienes una conexión de prueba:</p>
   </div>
 </ng-template>
 
 <!-- connections-list.component.html -->
-<div class="main-content" *ngIf="hasToken; else noTokenTemplate">
+<div class="main-content">
   <div class="connections-table">
     <table>
       <thead>
@@ -17,20 +17,45 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let connection of connections">
-          <td>{{ connection.name }}</td>
-          <td>{{ connection.host }}</td>
-          <td>{{ connection.db_type }}</td>
-          <td>
-            <button (click)="openEditModal(connection)">Editar</button>
-            <button (click)="deleteConnection(connection.id)">Eliminar</button>
-          </td>
-        </tr>
+        <ng-container *ngIf="hasToken; else testConnectionTemplate">
+          <tr *ngFor="let connection of connections">
+            <td>{{ connection.name }}</td>
+            <td>{{ connection.host }}</td>
+            <td>{{ connection.db_type }}</td>
+            <td>
+              <button (click)="openEditModal(connection)">Editar</button>
+              <button (click)="deleteConnection(connection.id)">Eliminar</button>
+            </td>
+          </tr>
+        </ng-container>
+        <ng-template #testConnectionTemplate>
+          <tr>
+            <td>{{ testConnection.name }}</td>
+            <td>{{ testConnection.host }}</td>
+            <td>{{ testConnection.db_type }}</td>
+            <td>
+              <button (click)="openEditModal(testConnection)">Editar</button>
+              <button (click)="deleteConnection(testConnection.id)">Eliminar</button>
+            </td>
+          </tr>
+        </ng-template>
       </tbody>
     </table>
   </div>
 
-  
+  <!-- Alerta informativa para usuarios no autenticados -->
+  <div *ngIf="!hasToken" class="info-alert">
+    <div class="alert-icon">ℹ️</div>
+    <div class="alert-content">
+      <h3>¡Bienvenido a nuestra plataforma de chat con bases de datos!</h3>
+      <p>Te hemos proporcionado una conexión de prueba para que puedas experimentar con nuestro chat sin necesidad de registrarte. Esta conexión te permite explorar las funcionalidades básicas de nuestra plataforma.</p>
+      <p>Para disfrutar de todas las características, incluyendo la gestión de tus propias conexiones, te invitamos a 
+        <a href="#" (click)="openSignInModal($event)">iniciar sesión</a> o 
+        <a href="#" (click)="openRegisterModal($event)">crear una cuenta</a>.
+      </p>
+      
+    </div>
+  </div>
 
   <!-- Modal de edición -->
   <div class="modal" *ngIf="isEditModalOpen">

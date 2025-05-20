@@ -15,6 +15,7 @@ import { AuthService } from '../services/auth.service'; // Asegúrate de que la 
 export class StartChatComponent implements OnInit {
   databases: any[] = [];
   selectedDatabase: string = '';
+  isLoggedIn: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -23,23 +24,38 @@ export class StartChatComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.isLoggedIn = this.authService.isLoggedIn();
     this.loadDatabases();
   }
 
   loadDatabases() {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getToken()}`
-    });
-
-    this.http.get<any[]>('http://localhost:8000/api/get-connections/', { headers })
-      .subscribe({
-        next: (data) => {
-          this.databases = data;
-        },
-        error: (error) => {
-          console.error('Error loading databases:', error);
-        }
+    if (this.isLoggedIn) {
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${this.authService.getToken()}`
       });
+
+      this.http.get<any[]>('http://localhost:8000/api/get-connections/', { headers })
+        .subscribe({
+          next: (data) => {
+            this.databases = data;
+          },
+          error: (error) => {
+            console.error('Error loading databases:', error);
+          }
+        });
+    } else {
+      // Si el usuario no está autenticado, mostrar solo la base de datos de prueba
+      this.databases = [{
+        id: 'test',
+        name: 'Conexión de Prueba',
+        host: 'localhost',
+        db_type: 'MySQL',
+        port: 3306,
+        dbname: 'zoodb',
+        user: 'root',
+        password: 'root'
+      }];
+    }
   }
 
   startChat() {

@@ -159,7 +159,7 @@ transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, border-co
 
 /* Botones dentro del modal */
 .modal-content button {
-    padding: 10px 20px;
+    padding: 10px 100px;
     border: none;
     background-color: #8a83f4;
     color: #1e1e2f;
@@ -169,6 +169,7 @@ transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, border-co
     cursor: pointer;
     transition: background 0.3s ease-in-out;
     margin-top: 10px;
+    margin-left: 30px;
 }
 
 .modal-content button:hover {
@@ -214,6 +215,24 @@ transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, border-co
     width: 100%;
     margin-bottom: 15px;
 }
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    color: #aaa;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .close-btn:hover,
+  .close-btn:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+  }
 
 .user-name {
     color: white; /* Color de texto del email */

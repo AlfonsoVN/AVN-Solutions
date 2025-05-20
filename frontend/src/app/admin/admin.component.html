@@ -1,1 +1,72 @@
-<p>admin works!</p>
+<div class="admin-layout">
+    <aside class="sidebar">
+      <!-- Aquí irá el contenido de la barra lateral -->
+      <br><br><br>
+      <h2>Panel de Administración</h2>
+      <nav>
+        <ul>
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#">Usuarios</a></li>
+          <li><a href="#">Configuración</a></li>
+          <!-- Agrega más elementos de menú según sea necesario -->
+        </ul>
+      </nav>
+    </aside>
+    <main class="main-content">
+        <h2>Consultas Peligrosas Ejecutadas</h2>
+        <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Consulta</th>
+                  <th>Fecha y Hora</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let query of dangerousQueries">
+                  <td>{{ query.username }}</td>
+                  <td>{{ query.query }}</td>
+                  <td>{{ query.executed_at | date:'medium' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        
+
+
+        <h2>Gestión de Usuarios</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Fecha de Registro</th>
+            <th>Admin</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="table-body-container">
+        <table>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.email }}</td>
+              <td>{{ user.first_name }}</td>
+              <td>{{ user.last_name }}</td>
+              <td>{{ user.date_joined | date:'medium' }}</td>
+              <td>{{ user.is_superuser ? 'Sí' : 'No' }}</td>
+              <td>
+                <button class="edit-btn" (click)="editUser(user)">Editar</button>
+                <button class="delete-btn" (click)="deleteUser(user)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+  

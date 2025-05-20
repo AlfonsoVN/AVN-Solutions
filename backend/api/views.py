@@ -17,11 +17,11 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from .forms import ConexionForm
 
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, BasePermission
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import Conexion, SQLExecution, ChatMessage  # Asegúrate de tener este modelo definido
-from .serializers import ConexionSerializer
+from .models import Conexion, DangerousQuery, SQLExecution, ChatMessage  # Asegúrate de tener este modelo definido
+from .serializers import ConexionSerializer, DangerousQuerySerializer
 from .utils import obtener_conexion  # Importa las funciones desde utils
 
 from django.contrib.auth.models import User
@@ -489,10 +489,58 @@ def execute_dangerous_query(request):
                 result_data = {
                     'message': "Consulta ejecutada con éxito. No se pudo determinar la tabla afectada."
                 }
+
+        # Guardar la consulta peligrosa
+        DangerousQuery.objects.create(
+            user=request.user,
+            query=query
+        )
         
         SQLExecution.objects.create(
-            user=request.user.username, bbdd=connection.name, query=query, executed_at=datetime.now())
+            user=request.user.username, 
+            bbdd=connection.name, 
+            query=query, 
+            executed_at=datetime.now()
+        )
+        
         return JsonResponse({'result': result_data})
     except Exception as e:
         logger.error(f"Error al ejecutar la consulta peligrosa: {str(e)}", exc_info=True)
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
+class CanViewDangerousQueries(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
+
+
+@api_view(['GET'])
+@permission_classes([CanViewDangerousQueries])
+def get_dangerous_queries(request):
+    print("get_dangerous_queries llamado")
+    queries = DangerousQuery.objects.all().order_by('-executed_at')
+    print(f"Número de consultas: {queries.count()}")
+    serializer = DangerousQuerySerializer(queries, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([CanViewDangerousQueries])
+def get_users(request):
+    print("Solicitud recibida para obtener usuarios")
+    users = User.objects.all().order_by('-date_joined')
+    print(f"Número de usuarios encontrados: {len(users)}")
+    user_data = [
+        {
+            'id': user.id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'date_joined': user.date_joined,
+            'is_superuser': user.is_superuser
+        }
+        for user in users
+    ]
+    print("Enviando respuesta con datos de usuarios")
+    return Response(user_data)
+

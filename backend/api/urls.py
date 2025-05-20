@@ -21,6 +21,9 @@ urlpatterns = [
     path('user/<int:user_id>/', get_user_details, name='get_user_details'),
     path('chat_view/', views.chat_view, name='chat_view'),
     path('execute_dangerous_query/', views.execute_dangerous_query, name='execute_dangerous_query'),
+    path('dangerous-queries/', views.get_dangerous_queries, name='get_dangerous_queries'),
+    path('users/', views.get_users, name='get_users'),
+
 ]
 
 

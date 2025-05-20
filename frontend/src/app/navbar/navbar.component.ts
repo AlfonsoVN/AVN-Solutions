@@ -6,6 +6,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Subscription } from 'rxjs';
+import { ModalService } from '../services/modal.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -20,6 +22,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   currentUserEmail: string | null = null;
   isAdmin: boolean = false;
   private userSubscription: Subscription = new Subscription();
+  private modalSubscription: Subscription = new Subscription();
 
 
   userData = {
@@ -30,7 +33,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     confirmPassword: '',
   };
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private authService: AuthService, private modalService: ModalService) {}
 
   ngOnInit() {
     this.userSubscription = this.authService.currentUser$.subscribe(user => {
@@ -41,11 +44,33 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (this.authService.isLoggedIn()) {
       this.authService.getUserData().subscribe();
     }
+    this.modalSubscription.add(
+      this.modalService.signInClicked$.subscribe(() => {
+        this.isSignInModalOpen = true;
+      })
+    );
+  
+    this.modalSubscription.add(
+      this.modalService.registerClicked$.subscribe(() => {
+        this.isRegisterModalOpen = true;
+      })
+    );
+
+    this.route.queryParams.subscribe(params => {
+      if (params['action'] === 'signin') {
+        this.openSignInModal();
+      } else if (params['action'] === 'register') {
+        this.openRegisterModal();
+      }
+    });
+  
+  
   }
 
   ngOnDestroy() {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
+      this.modalSubscription.unsubscribe();
     }
   }
 
