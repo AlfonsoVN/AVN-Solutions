@@ -23,17 +23,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-csa)otcmaq^$vigtr)ib1=j=hfoe!0)t7=f-4k=bju#=-%7bl*'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-     os.getenv('RENDER_EXTERNAL_HOSTNAME', 'avn-solutions.onrender.com')
- 
+    'avn-solutions.onrender.com',
+    'avn-solutions-azlq.vercel.app',
+    'avn-solutions-azlq-14t9ay5az-alfonso-vicaria-nieves-projects.vercel.app',
 ]
+
 
 
 # Application definition
@@ -149,7 +151,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
-    "https://avn-solutions-azlq.vercel.app/",
+    "https://avn-solutions-azlq.vercel.app",
     "https://avn-solutions-azlq-14t9ay5az-alfonso-vicaria-nieves-projects.vercel.app",  # Si tu frontend de Angular está en ese puerto
     
 ]
@@ -174,11 +176,11 @@ REST_FRAMEWORK = {
 
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
+CSRF_COOKIE_SECURE = True  # Cambiar a True en producción si usas HTTPS
 CSRF_HEADER_NAME = "X-CSRFToken"
 
 # Seguridad en cookies de sesión
-SESSION_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
+SESSION_COOKIE_SECURE = True  # Cambiar a True en producción si usas HTTPS
 
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
@@ -189,4 +191,18 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # O el tiempo que prefieras
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
 }

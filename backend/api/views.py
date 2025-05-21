@@ -138,10 +138,12 @@ def get_user_details(request, user_id):
     except User.DoesNotExist:
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
     
-
+@csrf_exempt
 @api_view(['POST'])  # Asegura que solo acepte POST
 def test_connection(request):
-        
+    logger.info("Recibida solicitud de prueba de conexión")
+    logger.debug(f"Datos recibidos: {request.body}")
+
     print("Headers:", request.headers)
     print("Body recibido:", request.body)
 
@@ -172,6 +174,8 @@ def test_connection(request):
             connection.execute(text('SELECT 1'))  # Esto es solo una consulta simple para comprobar la conexión        
         return JsonResponse({'exito': True, 'mensaje': 'Conexión exitosa'})
     
+    except json.JSONDecodeError:
+        return JsonResponse({'exito': False, 'mensaje': 'Datos de solicitud inválidos'}, status=400)
     except OperationalError as e:
         # Si ocurre un error de conexión, devolver el error
         return JsonResponse({'exito': False, 'mensaje': f'Error al conectar con la base de datos: {str(e)}'}, status=400)

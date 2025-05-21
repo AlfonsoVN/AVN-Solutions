@@ -54,7 +54,14 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
           }
         },
         error: (err) => {
-          alert('Error en la solicitud: ' + err.message);
+          console.error('Error completo:', err);
+          let errorMsg = 'Error en la solicitud';
+          if (err.error && err.error.mensaje) {
+            errorMsg += ': ' + err.error.mensaje;
+          } else if (err.message) {
+            errorMsg += ': ' + err.message;
+          }
+          alert(errorMsg);
           this.connectionSuccessful = false;  // En caso de error en la solicitud
         },
       });
