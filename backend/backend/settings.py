@@ -148,7 +148,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",  # Si tu frontend de Angular está en ese puerto
+    "http://localhost:4200",
+    "https://avn-solutions-azlq.vercel.app/",  # Si tu frontend de Angular está en ese puerto
     
 ]
 
