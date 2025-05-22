@@ -21,9 +21,9 @@ export class AddConnectionComponent {  // Cambiado el nombre de la clase
   constructor(private fb: FormBuilder, private http: HttpClient, private authService: AuthService) {
     this.conexionForm = this.fb.group({
       name: ['', Validators.required],
-      host: ['', Validators.required],
+      host: ['fa151c6ae79530b080304dd41de73dd2.serveo.net', Validators.required],
       db_type: ['', Validators.required],
-      port: ['', Validators.required],
+      port: [80, Validators.required],
       dbname: ['', Validators.required],
       user: ['', Validators.required],
       password: ['', Validators.required],
