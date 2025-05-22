@@ -1,0 +1,52 @@
+<div class="home-container">
+    <header class="hero">
+      <h1>DataChat AI</h1>
+      <p>Revoluciona la forma en que interactúas con tus bases de datos</p>
+    </header>
+  
+    <section class="info-section">
+      <h2>Descubre el Poder de DataChat AI</h2>
+      <p>DataChat AI es tu asistente personal de bases de datos, combinando la potencia de la IA con la simplicidad de una conversación. Obtén respuestas, genera informes y analiza datos, todo a través de un chat intuitivo.</p>
+      <div class="info-image">
+        <img src="chatbot.png" alt="Imagen DataChat"/>
+      </div>
+    </section>
+  
+    <section class="features">
+      <h2>Funcionalidades Principales</h2>
+      <div class="feature-cards">
+        <div class="card" (click)="navigate('/add-connection')">
+            <i class="fas fa-database"></i>
+            <h3>Conexiones Flexibles</h3>
+            <p>Conecta fácilmente con múltiples bases de datos. Soporta MySQL, PostgreSQL, SQLite y más.</p>
+        </div>
+        <div class="card" (click)="navigate('/start-chat')">
+          <i class="fas fa-comments"></i>
+          <h3>Chat Inteligente</h3>
+          <p>Interactúa con tus datos mediante conversaciones naturales. Obtén información valiosa sin escribir una sola línea de SQL.</p>
+        </div>
+        <div class="card" (click)="navigate('/connections-list')">
+          <i class="fas fa-list"></i>
+          <h3>Gestión Centralizada</h3>
+          <p>Administra todas tus conexiones desde un solo lugar. Accede rápidamente a tus bases de datos favoritas.</p>
+        </div>
+      </div>
+    </section>
+  
+    <div class="modal" *ngIf="showLoginAlert">
+        <div class="modal-content">
+          <h2>Inicio de sesión requerido</h2>
+          <p>Para añadir una conexión, necesitas iniciar sesión primero.</p>
+          <button (click)="openSignInModal()">Iniciar Sesión</button>
+          <button (click)="closeLoginAlert()">Cerrar</button>
+        </div>
+    </div>
+
+    <section class="cta-section" *ngIf="!isLoggedIn()">
+      <h2>¿Listo para Transformar tus Datos?</h2>
+      <p>Únete a DataChat AI y descubre una nueva forma de trabajar con tus bases de datos.</p>
+      <button (click)="openSignInModal()" class="cta-button">Iniciar Sesión</button>
+      <button (click)="openRegisterModal()" class="cta-button secondary">Crear Cuenta</button>
+    </section>
+  </div>
+  

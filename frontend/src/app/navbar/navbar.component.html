@@ -7,7 +7,7 @@
     </div>
     <div class="nav-mid">
       <a routerLink="/" class="nav-item">Inicio</a>
-      <a routerLink="/add-connection" class="nav-item">Añadir Conexión</a>
+      <a *ngIf="isLoggedIn()" routerLink="/add-connection" class="nav-item">Añadir Conexión</a>
       <a routerLink="/connections-list" class="nav-item">Lista de Conexiones</a>
       <a routerLink="/start-chat" class="nav-item">Iniciar Chat</a>
       <a *ngIf="isAdmin" routerLink="/admin" class="nav-item">Admin</a>
