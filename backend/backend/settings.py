@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
     'avn-solutions-azlq-14t9ay5az-alfonso-vicaria-nieves-projects.vercel.app',
     'https://avn-solutions-azlq-ah4hhwjct-alfonso-vicaria-nieves-projects.vercel.app',
     'https://avn-solutions-azlq-bd9lvni8r-alfonso-vicaria-nieves-projects.vercel.app',
+    'avn-solutions-azlq-oa5dgv698-alfonso-vicaria-nieves-projects.vercel.app',
 ]
 
 
