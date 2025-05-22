@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     'avn-solutions.onrender.com',
     'avn-solutions-azlq.vercel.app',
     'avn-solutions-azlq-14t9ay5az-alfonso-vicaria-nieves-projects.vercel.app',
+    "https://avn-solutions-azlq-ah4hhwjct-alfonso-vicaria-nieves-projects.vercel.app",
 ]
 
 
@@ -148,6 +149,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
