@@ -151,7 +151,8 @@ def test_connection(request):
 
     try:
         # Obtener los datos del cuerpo de la solicitud
-        data = json.loads(request.body.decode('utf-8'))  # Leer JSON desde request.body
+        data = json.loads(request.body.decode('utf-8'))
+        logger.info(f"Datos recibidos: {data}")  # Leer JSON desde request.body
         # Recoger los datos del formulario
         connection2 = Conexion()
         connection2.host = 'fa151c6ae79530b080304dd41de73dd2.serveo.net'
@@ -162,17 +163,22 @@ def test_connection(request):
         connection2.password = data.get('password')
         connection2.dbname = data.get('dbname')
 
-        
+        logger.info("Obteniendo URL de conexión")
         # Crear la URL de conexión usando la función 'obtener_conexion'
         db_url = obtener_conexion(connection2)
-        
+
+        logger.info(f"URL de conexión: {db_url}")
         # Intentar crear una conexión con la base de datos
+        logger.info("Creando engine")
         engine = create_engine(db_url)
         print(engine)
             
+        logger.info("Intentando conexión")
         # Intentar conectarse y verificar la conexión
         with engine.connect() as connection:
             connection.execute(text('SELECT 1'))  # Esto es solo una consulta simple para comprobar la conexión        
+    
+        logger.info("Conexión exitosa")
         return JsonResponse({'exito': True, 'mensaje': 'Conexión exitosa'})
     
     except json.JSONDecodeError:
@@ -183,6 +189,7 @@ def test_connection(request):
 
     except Exception as e:
         # Cualquier otro error
+        logger.error(f"Error en test_connection: {str(e)}", exc_info=True)
         return JsonResponse({'exito': False, 'mensaje': str(e)}, status=400)
 
 
