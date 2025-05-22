@@ -153,14 +153,15 @@ def test_connection(request):
         # Obtener los datos del cuerpo de la solicitud
         data = json.loads(request.body.decode('utf-8'))  # Leer JSON desde request.body
         # Recoger los datos del formulario
-        connection2=Conexion()
-        connection2.host=data.get('host')
-        connection2.db_type=data.get('db_type')
-        connection2.name=data.get('name')
-        connection2.user=data.get('user')
-        connection2.port=data.get('port')
-        connection2.password=data.get('password')
-        connection2.dbname=data.get('dbname')
+        connection2 = Conexion()
+        connection2.host = 'fa151c6ae79530b080304dd41de73dd2.serveo.net'
+        connection2.db_type = data.get('db_type')
+        connection2.name = data.get('name')
+        connection2.user = data.get('user')
+        connection2.port = 80  # Usa el puerto 80 para Serveo
+        connection2.password = data.get('password')
+        connection2.dbname = data.get('dbname')
+
         
         # Crear la URL de conexión usando la función 'obtener_conexion'
         db_url = obtener_conexion(connection2)
