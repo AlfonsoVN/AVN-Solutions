@@ -35,11 +35,18 @@ export class ConnectionsListComponent implements OnInit {
   ngOnInit(): void {
     this.hasToken = this.authService.isLoggedIn();
     if (this.hasToken) {
-      this.getConnections().subscribe((data: any[]) => {
-        this.connections = data;
+      this.getConnections().subscribe({
+        next: (data: any[]) => {
+          this.connections = data;
+        },
+        error: (err) => {
+          console.error('Error al cargar conexiones:', err);
+          this.showNotification('Error al cargar conexiones', 'error');
+        }
       });
     }
   }
+  
 
   getConnections(): Observable<any[]> {
     const headers = new HttpHeaders({
@@ -50,25 +57,56 @@ export class ConnectionsListComponent implements OnInit {
 
   editConnection() {
     if (this.editConnectionData) {
+      const dataToSend = {
+        ...this.editConnectionData,
+        name: this.editConnectionData.name  // Envía solo el nombre actualizado
+      };
+  
+      delete dataToSend.originalEmail; // Eliminar el campo adicional antes de enviar
+  
       const headers = new HttpHeaders({
         'Authorization': `Bearer ${this.authService.getToken()}`
       });
+  
       this.http
-        .put<any>(`http://localhost:8000/api/edit-connection/${this.editConnectionData.id}/`, this.editConnectionData, { headers })
+        .put<any>(`http://localhost:8000/api/edit-connection/${this.editConnectionData.id}/`, dataToSend, { headers })
         .subscribe({
-          next: () => {
-            alert('Conexión actualizada correctamente');
-            this.getConnections().subscribe((data: any[]) => {
-              this.connections = data;
-            });
-            this.closeEditModal();
+          next: (response) => {
+            console.log('Respuesta del servidor:', response);
+            if (response && response.mensaje) {
+              this.showNotification(response.mensaje, 'success');
+              // Actualizar la conexión en el array local
+              const index = this.connections.findIndex(c => c.id === this.editConnectionData.id);
+              if (index !== -1) {
+                this.connections[index] = response.conexion;
+              }
+              this.closeEditModal();
+              // Opcional: recargar todas las conexiones
+              this.getConnections().subscribe((data: any[]) => {
+                this.connections = data;
+              });
+            } else {
+              this.showNotification('Error al actualizar la conexión: Respuesta inesperada del servidor', 'error');
+            }
           },
           error: (err) => {
-            alert('Error al actualizar la conexión: ' + err.message);
+            console.error('Error al actualizar la conexión:', err);
+            this.showNotification('Error al actualizar la conexión: ' + (err.error?.mensaje || err.message || 'Error desconocido'), 'error');
           },
         });
     }
   }
+  
+  
+  
+  
+  
+  showNotification(message: string, type: 'success' | 'error') {
+    // Implementa esta función para mostrar notificaciones
+    // Puedes usar un servicio de notificaciones o una librería como ngx-toastr
+    console.log(`${type.toUpperCase()}: ${message}`);
+  }
+  
 
   openSignInModal(event: Event) {
     event.preventDefault();
@@ -82,7 +120,12 @@ export class ConnectionsListComponent implements OnInit {
 
   openEditModal(connection: any) {
     if (this.hasToken) {
-      this.editConnectionData = { ...connection };
+      const [email, name] = connection.name.split(' ~ ');
+      this.editConnectionData = { 
+        ...connection,
+        originalEmail: email,
+        name: name // Solo el nombre de la conexión para editar
+      };
       this.isEditModalOpen = true;
     } else {
       alert('Inicia sesión para editar conexiones.');
@@ -91,7 +134,9 @@ export class ConnectionsListComponent implements OnInit {
 
   closeEditModal() {
     this.isEditModalOpen = false;
+    this.editConnectionData = {}; // Resetea los datos de edición
   }
+  
 
   deleteConnection(id: number | string): void {
     if (id === 'test') {

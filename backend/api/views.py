@@ -11,7 +11,7 @@ from django.shortcuts import redirect, render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from sqlalchemy import create_engine, text, func
+from sqlalchemy import Connection, create_engine, text, func
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -102,6 +102,43 @@ def get_connections(request):
     
     return Response(modified_data)
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_connection(request, pk):
+    try:
+        connection = Conexion.objects.get(pk=pk)
+        
+        # Obtener los datos actualizados
+        updated_data = request.data.copy()
+        
+        # Asegurarse de que el nombre mantiene la estructura correcta
+        if 'name' in updated_data:
+            name_parts = updated_data['name'].split(' ~ ')
+            if len(name_parts) >= 2:
+                # El nombre ya viene con la estructura correcta (email ~ nombre_actualizado)
+                updated_data['name'] = ' ~ '.join(name_parts[:2])  # Asegurarse de que solo haya un '~'
+            else:
+                # Si no viene con la estructura correcta, mantener el email original
+                current_email = connection.name.split(' ~ ')[0]
+                updated_data['name'] = f"{current_email} ~ {updated_data['name']}"
+        
+        serializer = ConexionSerializer(connection, data=updated_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'mensaje': 'Conexión actualizada correctamente',
+                'conexion': serializer.data
+            })
+        return Response({
+            'mensaje': 'Datos inválidos',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Conexion.DoesNotExist:
+        return Response({
+            'mensaje': 'Conexión no encontrada'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
 
 @api_view(['DELETE'])
 def delete_connection(request, pk):
@@ -112,20 +149,8 @@ def delete_connection(request, pk):
         return Response({"mensaje": "Conexión eliminada correctamente"}, status=status.HTTP_204_NO_CONTENT)
     except Conexion.DoesNotExist:
         return Response({"mensaje": "Conexión no encontrada"}, status=status.HTTP_404_NOT_FOUND)
-    
-@api_view(['PUT'])
-def edit_connection(request, pk):
-    try:
-        connection = Conexion.objects.get(pk=pk)
-    except Conexion.DoesNotExist:
-        return Response({'mensaje': 'Conexión no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = ConexionSerializer(connection, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({'mensaje': 'Conexión actualizada correctamente'}, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 @api_view(['GET'])
 def get_user_details(request, user_id):
     try:
@@ -320,6 +345,8 @@ def chat_view(request):
                 f"A continuación se muestran las tablas de la base de datos:\n\n{db_structure}\n\n"
                 "Si el usuario pregunta por las tablas de la base de datos, muestra solo los nombres de las tablas sin información adicional. "
                 "Si el usuario pide ver registros, proporciona una consulta SELECT apropiada entre comillas triples ```. "
+                "IMPORTANTE: Cuando proporciones consultas SQL, NO uses backticks (`) alrededor de los nombres de tablas o columnas. "
+                "Por ejemplo, usa 'SELECT * FROM tabla;' en lugar de 'SELECT * FROM `tabla`;'. "
                 "Si el usuario pide modificar, eliminar o insertar datos, proporciona la consulta SQL apropiada entre comillas triples ``` "
                 "y advierte que es una operación peligrosa que requiere confirmación."
             )
@@ -353,6 +380,21 @@ def chat_view(request):
             sql_match = re.search(r'```sql\n(.*?)\n```', response, re.DOTALL)
             if sql_match:
                 suggested_query = sql_match.group(1).strip()
+            else:
+                # Si no encuentra la estructura esperada, busca cualquier consulta SQL
+                sql_match = re.search(r'SELECT.*?FROM.*?;', response, re.DOTALL | re.IGNORECASE)
+                if sql_match:
+                    suggested_query = sql_match.group(0).strip()
+                else:
+                    suggested_query = None
+
+            if suggested_query:
+                formatted_query = clean_sql_query(suggested_query)
+                # Reemplaza la consulta original en la respuesta con la versión formateada
+                response = re.sub(r'```sql\n.*?\n```', formatted_query, response, flags=re.DOTALL)
+                if '```sql' not in response:
+                    response = response.strip() + "\n\n" + formatted_query
+
                 is_safe = is_safe_query(suggested_query)
                 try:
                     if is_safe:
@@ -360,7 +402,6 @@ def chat_view(request):
                         SQLExecution.objects.create(
                             user=request.user.username, bbdd=connection.name, query=suggested_query, executed_at=datetime.now())
                         
-                        # Guardar la respuesta del asistente con el resultado SQL
                         ChatMessage.objects.create(
                             user=request.user,
                             connection=connection,
@@ -426,6 +467,18 @@ def chat_view(request):
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+def clean_sql_query(query):
+    # Elimina los backticks de los nombres de tablas y columnas
+    query = re.sub(r'`([^`]+)`', r'\1', query)
+    
+    # Asegúrate de que la consulta termine con punto y coma
+    if not query.strip().endswith(';'):
+        query = query.strip() + ';'
+    
+    # Formatea la consulta en la estructura deseada
+    return f"```sql\n{query}\n```"
 
 
 
@@ -561,7 +614,9 @@ def test_database_query(request):
                 f"Eres un asistente útil que SIEMPRE responde en español. El usuario está trabajando con una base de datos de prueba. "
                 f"A continuación se muestran las tablas de la base de datos:\n\n{db_structure}\n\n"
                 "Si el usuario pregunta por las tablas de la base de datos, muestra solo los nombres de las tablas sin información adicional. "
-                "Si el usuario pide ver registros, proporciona una consulta SELECT apropiada entre comillas triples ```. "
+                "Si el usuario pide ver registros, proporciona una consulta SELECT apropiada SIEMPRE en el siguiente formato exacto:\n"
+                "```sql\nSELECT * FROM tabla;\n```\n"
+                "NO uses backticks (`) alrededor de los nombres de tablas o columnas. "
                 "Si el usuario pide modificar, eliminar o insertar datos, proporciona la consulta SQL apropiada entre comillas triples ``` "
                 "y advierte que es una operación peligrosa que requiere confirmación."
             )
