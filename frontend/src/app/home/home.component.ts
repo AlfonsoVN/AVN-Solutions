@@ -3,11 +3,13 @@ import { RouterModule } from '@angular/router';  // Agregar esta importación
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { ModalService } from '../services/modal.service';
+import { CommonModule } from '@angular/common';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule],  // Asegúrate de agregar RouterModule aquí
+  imports: [RouterModule, CommonModule, NgIf],  // Asegúrate de agregar RouterModule aquí
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })

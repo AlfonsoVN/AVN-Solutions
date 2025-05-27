@@ -8,19 +8,25 @@ import { AuthService } from '../services/auth.service';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../services/modal.service';
 import { ActivatedRoute } from '@angular/router';
+import { NotificationService } from '../services/notification.service';
+import { NotificationComponent } from '../notification/notification.component';
+
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
-  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule, NotificationComponent],
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   isSignInModalOpen = false;
   isRegisterModalOpen = false;
   currentUserEmail: string | null = null;
   isAdmin: boolean = false;
+  showNotification = false;
+  notificationMessage = '';
+  notificationSuccess = true;
   private userSubscription: Subscription = new Subscription();
   private modalSubscription: Subscription = new Subscription();
 
@@ -33,7 +39,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     confirmPassword: '',
   };
 
-  constructor(private route: ActivatedRoute, private router: Router, private authService: AuthService, private modalService: ModalService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private authService: AuthService, private modalService: ModalService,  private notificationService: NotificationService) {}
 
   ngOnInit() {
     this.userSubscription = this.authService.currentUser$.subscribe(user => {
@@ -67,6 +73,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
   
   }
 
+  showNotificationMessage(message: string, success: boolean) {
+    this.notificationMessage = message;
+    this.notificationSuccess = success;
+    this.showNotification = true;
+    this.notificationService.showNotification(message, success);
+    setTimeout(() => {
+      this.showNotification = false;
+    }, 3000); // La notificación desaparecerá después de 3 segundos
+  }
+  
+  
+
   ngOnDestroy() {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
@@ -92,7 +110,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   registerUser() {
     if (this.userData.password !== this.userData.confirmPassword) {
-      alert('Las contraseñas no coinciden.');
+      this.showNotificationMessage('Las contraseñas no coinciden.', false);
       return;
     }
 
@@ -104,12 +122,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .then(res => {
         if (res.ok) {
           this.closeRegisterModal();
-          alert('Usuario registrado correctamente');
+          this.notificationService.showNotification('Usuario registrado correctamente', true);
         } else {
           throw new Error('Registro fallido');
         }
       })
-      .catch(() => alert('Hubo un error al registrar el usuario.'));
+      .catch((error) => {
+        console.error('Error en el registro:', error);
+        this.notificationService.showNotification('Hubo un error al registrar el usuario.', false);
+      });
   }
 
   signInUser() {
@@ -129,7 +150,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.authService.setToken(tokens.access);
           localStorage.setItem('refresh_token', tokens.refresh);
           this.authService.getUserData().subscribe(() => {
-            alert('Sesión iniciada correctamente');
+            this.notificationService.showNotification('Sesión iniciada correctamente', true);
             this.closeSignInModal();
             this.router.navigate(['/']);
           });
@@ -137,7 +158,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
           throw new Error('Login fallido');
         }
       })
-      .catch(() => alert('Credenciales incorrectas. Inténtalo de nuevo.'));
+      .catch(() => {
+        this.notificationService.showNotification('Credenciales incorrectas. Inténtalo de nuevo.', false);
+      });
   }
 
   logout() {
