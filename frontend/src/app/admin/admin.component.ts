@@ -26,7 +26,7 @@ export class AdminComponent implements OnInit {
   users: User[] = [];
   currentPageQueries = 1;
   currentPageUsers = 1;
-  itemsPerPage = 8;
+  itemsPerPage = 7;
   showModal = false;
   modalUser: any = {};
   modalTitle = '';
@@ -94,7 +94,7 @@ export class AdminComponent implements OnInit {
 
   generatePageRange(currentPage: number, totalPages: number): (number | string)[] {
     const range: (number | string)[] = [];
-    if (totalPages <= 7) {
+    if (totalPages <= 6) {
       for (let i = 1; i <= totalPages; i++) {
         range.push(i);
       }
@@ -212,7 +212,7 @@ export class AdminComponent implements OnInit {
     event.preventDefault();
     const element = document.getElementById(elementId);
     if (element) {
-      const yOffset = -125; // Ajusta este valor según sea necesario
+      const yOffset = -100; // Ajusta este valor según sea necesario
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({top: y, behavior: 'smooth'});
     }

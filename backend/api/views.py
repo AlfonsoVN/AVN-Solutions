@@ -435,6 +435,24 @@ def chat_view(request):
 
                 is_safe = is_safe_query(suggested_query)
                 try:
+
+                    if not is_safe:
+                        # Validar estructura de la consulta de modificación
+                        table_match = re.search(r'(INTO|UPDATE)\s+(\w+)', suggested_query, re.IGNORECASE)
+                        if table_match:
+                            table = table_match.group(2)
+                            inspector = inspect(engine)
+                            table_columns = [col['name'] for col in inspector.get_columns(table)]
+
+                            # Extraer las columnas entre paréntesis del INSERT o UPDATE
+                            cols_in_query = re.search(r'\((.*?)\)', suggested_query)
+                            if cols_in_query:
+                                used_columns = [c.strip() for c in cols_in_query.group(1).split(',')]
+                                for col in used_columns:
+                                    if col not in table_columns:
+                                        raise ValueError(f"La columna '{col}' no existe en la tabla '{table}'.")
+
+
                     if is_safe:
                         result = execute_sql_query(connection, suggested_query)
                         SQLExecution.objects.create(
@@ -454,7 +472,17 @@ def chat_view(request):
                             'show_only_table': True
                         })
                     else:
-                        # Guardar la respuesta del asistente con la advertencia
+                        # ⚠️ Asegurar que el mensaje y el botón de advertencia estén presentes
+                        confirmation_block = (
+                            "⚠️ Advertencia: Esta acción es peligrosa y modificará permanentemente la base de datos.\n"
+                            "¿Está seguro de que desea continuar? Si es así, confirme haciendo clic en el siguiente botón.\n"
+                            "**Ejecutar sentencia peligrosa**"
+                        )
+
+                        # Añadir bloque de advertencia solo si no está presente
+                        if "⚠️ Advertencia" not in response:
+                            response = response.strip() + "\n\n" + confirmation_block
+
                         ChatMessage.objects.create(
                             user=request.user,
                             connection=connection,
