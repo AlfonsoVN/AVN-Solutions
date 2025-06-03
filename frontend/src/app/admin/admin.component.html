@@ -4,8 +4,8 @@
       <h2>Panel de Administración</h2>
       <nav>
         <ul>
-          <li><a (click)="scrollTo('dangerous-queries', $event)">Consultas Peligrosas</a></li>
-          <li><a (click)="scrollTo('user-management', $event)">Gestión de Usuarios</a></li>
+          <li><a (click)="scrollTo('dangerous-queries-title', $event)">Consultas Peligrosas</a></li>
+          <li><a (click)="scrollTo('user-management-title', $event)">Gestión de Usuarios</a></li>
         </ul>
       </nav>
     </div>
@@ -14,7 +14,8 @@
   <main class="main-content">
     <div class="section-container">
       <section id="dangerous-queries">
-        <h2>Consultas Peligrosas Ejecutadas</h2>
+        <h2 id="dangerous-queries-title">Consultas Peligrosas Ejecutadas</h2>
+        <p class="section-description">Esta tabla muestra las consultas potencialmente peligrosas realizadas por los usuarios del sistema.</p>
         <div class="table-container">
           <table>
             <thead>
@@ -25,10 +26,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let query of paginatedQueries">
-                <td>{{ query.username }}</td>
-                <td>{{ query.query }}</td>
-                <td>{{ query.executed_at | date:'medium' }}</td>
+              <tr *ngFor="let query of filledPaginatedQueries">
+                <ng-container *ngIf="query; else emptyRow">
+                  <td>{{ query.username }}</td>
+                  <td>{{ query.query }}</td>
+                  <td>{{ query.executed_at | date:'medium' }}</td>
+                </ng-container>
+                <ng-template #emptyRow>
+                  <td colspan="3">&nbsp;</td>
+                </ng-template>  
               </tr>
             </tbody>
           </table>
@@ -51,7 +57,8 @@
 
     <div class="section-container">
       <section id="user-management">
-        <h2>Gestión de Usuarios</h2>
+        <h2 id="user-management-title">Gestión de Usuarios</h2>
+        <p class="section-description">Esta sección permite administrar las cuentas de usuario del sistema. Aquí puedes ver, editar y eliminar usuarios, así como asignar o revocar privilegios de administrador.</p>
         <div class="table-container">
           <table>
             <thead>
@@ -65,35 +72,55 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of paginatedUsers">
-                <td>{{ user.email }}</td>
-                <td>{{ user.first_name }}</td>
-                <td>{{ user.last_name }}</td>
-                <td>{{ user.date_joined | date:'medium' }}</td>
-                <td>{{ user.is_superuser ? 'Sí' : 'No' }}</td>
-                <td>
-                  <button class="edit-btn" (click)="editUser(user)">Editar</button>
-                  <button class="delete-btn" (click)="deleteUser(user)">Eliminar</button>
-                </td>
+              <tr *ngFor="let user of filledPaginatedUsers">
+                <ng-container *ngIf="user; else emptyRow">
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.first_name }}</td>
+                  <td>{{ user.last_name }}</td>
+                  <td>{{ user.date_joined | date:'medium' }}</td>
+                  <td>{{ user.is_superuser ? 'Sí' : 'No' }}</td>
+                  <td>
+                    <button class="edit-btn" (click)="editUser(user)">Editar</button>
+                    <button class="delete-btn" (click)="deleteUser(user)">Eliminar</button>
+                  </td>
+                </ng-container>
+                <ng-template #emptyRow>
+                  <td colspan="6">&nbsp;</td>
+                </ng-template>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="pagination">
-          <button (click)="prevPageUsers()" [disabled]="currentPageUsers === 1">&lt;</button>
-          <ng-container *ngFor="let page of pageRangeUsers(); let i = index">
-            <button 
-              *ngIf="page !== '...'"
-              (click)="goToPageUsers(page)" 
-              [class.active]="currentPageUsers === page">
-              {{ page }}
-            </button>
-            <span *ngIf="page === '...'">{{ page }}</span>
-          </ng-container>
-          <button (click)="nextPageUsers()" [disabled]="currentPageUsers === totalPagesUsers">&gt;</button>
-        </div>
-        <div class="action-buttons">
-          <button class="add-btn">Añadir Usuario</button>
+
+        <!-- admin.component.html -->
+        <app-user-modal 
+          *ngIf="showModal"
+          [user]="modalUser"
+          [title]="modalTitle"
+          [isEditing]="isEditing"
+          (save)="onSaveUser($event)"
+          (close)="closeModal()">
+        </app-user-modal>
+
+
+
+        <div class="pagination-container">
+          <button class="add-btn" (click)="addUser()">Añadir Usuario</button>
+
+          
+          <div class="pagination">
+            <button (click)="prevPageUsers()" [disabled]="currentPageUsers === 1">&lt;</button>
+            <ng-container *ngFor="let page of pageRangeUsers(); let i = index">
+              <button 
+                *ngIf="page !== '...'"
+                (click)="goToPageUsers(page)" 
+                [class.active]="currentPageUsers === page">
+                {{ page }}
+              </button>
+              <span *ngIf="page === '...'">{{ page }}</span>
+            </ng-container>
+            <button (click)="nextPageUsers()" [disabled]="currentPageUsers === totalPagesUsers">&gt;</button>
+          </div>
         </div>
       </section>
     </div>

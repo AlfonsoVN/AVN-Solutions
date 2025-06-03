@@ -1,14 +1,16 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AdminService } from '../services/admin.service';
+import { UserModalComponent } from '../user-modal/user-modal.component';
+
 
 interface User {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  date_joined: string;
-  is_superuser: boolean;
+  id: number | null;
+  email: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  date_joined: string | null;
+  is_superuser: boolean | null;
 }
 
 @Component({
@@ -16,7 +18,7 @@ interface User {
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, UserModalComponent],
   providers: [DatePipe]
 })
 export class AdminComponent implements OnInit {
@@ -25,6 +27,10 @@ export class AdminComponent implements OnInit {
   currentPageQueries = 1;
   currentPageUsers = 1;
   itemsPerPage = 8;
+  showModal = false;
+  modalUser: any = {};
+  modalTitle = '';
+  isEditing: boolean = false;
   @ViewChild('dangerousQueries') dangerousQueriesSection!: ElementRef;
   @ViewChild('userManagement') userManagementSection!: ElementRef;
 
@@ -140,21 +146,98 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  editUser(user: User) {
-    console.log('Editar usuario:', user);
-    // Implement edit user logic
+  addUser() {
+    this.modalUser = {};
+    this.modalTitle = 'Añadir Usuario';
+    this.showModal = true;
+    this.isEditing = false;
+    console.log('Modal should open', this.showModal);
   }
 
-  deleteUser(user: User) {
-    console.log('Eliminar usuario:', user);
-    // Implement delete user logic
+  editUser(user: User | null) {
+    if (user) {
+      this.modalUser = {...user};
+      this.modalTitle = 'Editar Usuario';
+      this.showModal = true;
+      this.isEditing = true;
+      console.log('Modal should open', this.showModal);
+    }
+  }
+
+
+  onSaveUser(user: any) {
+    if (user.id) {
+      this.adminService.updateUser(user.id, user).subscribe({
+        next: () => {
+          console.log('Usuario actualizado');
+          this.loadUsers();
+          this.showModal = false;
+        },
+        error: (error) => console.error('Error al actualizar usuario:', error)
+      });
+    } else {
+      this.adminService.addUser(user).subscribe({
+        next: () => {
+          console.log('Usuario añadido');
+          this.loadUsers();
+          this.showModal = false;
+        },
+        error: (error) => console.error('Error al añadir usuario:', error)
+      });
+    }
+  }
+
+  closeModal() {
+    this.showModal = false;
+  }
+
+
+  deleteUser(user: User | null) {
+    if (user && user.id) {
+      if (confirm(`¿Estás seguro de que quieres eliminar al usuario ${user.email}?`)) {
+        this.adminService.deleteUser(user.id).subscribe({
+          next: () => {
+            console.log('Usuario eliminado');
+            this.loadUsers(); // Recargar la lista de usuarios
+          },
+          error: (error) => {
+            console.error('Error al eliminar usuario:', error);
+          }
+        });
+      }
+    }
   }
 
   scrollTo(elementId: string, event: Event) {
     event.preventDefault();
     const element = document.getElementById(elementId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const yOffset = -125; // Ajusta este valor según sea necesario
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({top: y, behavior: 'smooth'});
     }
   }
+  
+
+  get filledPaginatedQueries(): (any | null)[] {
+    const queries = this.paginatedQueries;
+    const filledQueries: (any | null)[] = [...queries];
+    while (filledQueries.length < this.itemsPerPage) {
+      filledQueries.push(null);
+    }
+    return filledQueries;
+  }
+  
+
+  get filledPaginatedUsers(): (User | null)[] {
+    const users = this.paginatedUsers;
+    const filledUsers: (User | null)[] = [...users];
+    while (filledUsers.length < this.itemsPerPage) {
+      filledUsers.push(null);
+    }
+    return filledUsers;
+  }
+
+  
+  
 }

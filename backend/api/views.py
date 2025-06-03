@@ -39,7 +39,7 @@ from datetime import datetime, date
 from decimal import Decimal
 import pandas as pd
 
-
+from .serializers import UserSerializer
 import re
 
 import logging
@@ -80,6 +80,44 @@ def api_root(request):
         'añadir_conexion': 'http://127.0.0.1:8000/api/anadir_conexion/',
     })
 
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def add_user(request):
+    print("Received data:", request.data)  # Log para depuración
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    print("Serializer errors:", serializer.errors)  # Log para depuración
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def update_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = UserSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return Response({'message': 'Usuario eliminado correctamente'})
+    except User.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
