@@ -1,72 +1,101 @@
 <div class="admin-layout">
-    <aside class="sidebar">
-      <!-- Aquí irá el contenido de la barra lateral -->
-      <br><br><br>
+  <aside class="sidebar">
+    <div class="sidebar-content">
       <h2>Panel de Administración</h2>
       <nav>
         <ul>
-          <li><a href="#">Dashboard</a></li>
-          <li><a href="#">Usuarios</a></li>
-          <li><a href="#">Configuración</a></li>
-          <!-- Agrega más elementos de menú según sea necesario -->
+          <li><a (click)="scrollTo('dangerous-queries', $event)">Consultas Peligrosas</a></li>
+          <li><a (click)="scrollTo('user-management', $event)">Gestión de Usuarios</a></li>
         </ul>
       </nav>
-    </aside>
-    <main class="main-content">
+    </div>
+  </aside>
+  
+  <main class="main-content">
+    <div class="section-container">
+      <section id="dangerous-queries">
         <h2>Consultas Peligrosas Ejecutadas</h2>
         <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Consulta</th>
-                  <th>Fecha y Hora</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let query of dangerousQueries">
-                  <td>{{ query.username }}</td>
-                  <td>{{ query.query }}</td>
-                  <td>{{ query.executed_at | date:'medium' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Consulta</th>
+                <th>Fecha y Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let query of paginatedQueries">
+                <td>{{ query.username }}</td>
+                <td>{{ query.query }}</td>
+                <td>{{ query.executed_at | date:'medium' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button (click)="prevPageQueries()" [disabled]="currentPageQueries === 1">&lt;</button>
+          <ng-container *ngFor="let page of pageRangeQueries(); let i = index">
+            <button 
+              *ngIf="page !== '...'"
+              (click)="goToPageQueries(page)" 
+              [class.active]="currentPageQueries === page">
+              {{ page }}
+            </button>
+            <span *ngIf="page === '...'">{{ page }}</span>
+          </ng-container>
+          <button (click)="nextPageQueries()" [disabled]="currentPageQueries === totalPagesQueries">&gt;</button>
+        </div>
+      </section>
+    </div>
 
-
+    <div class="section-container">
+      <section id="user-management">
         <h2>Gestión de Usuarios</h2>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Fecha de Registro</th>
-            <th>Admin</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-      </table>
-      <div class="table-body-container">
-        <table>
-          <tbody>
-            <tr *ngFor="let user of users">
-              <td>{{ user.email }}</td>
-              <td>{{ user.first_name }}</td>
-              <td>{{ user.last_name }}</td>
-              <td>{{ user.date_joined | date:'medium' }}</td>
-              <td>{{ user.is_superuser ? 'Sí' : 'No' }}</td>
-              <td>
-                <button class="edit-btn" (click)="editUser(user)">Editar</button>
-                <button class="delete-btn" (click)="deleteUser(user)">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Fecha de Registro</th>
+                <th>Admin</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of paginatedUsers">
+                <td>{{ user.email }}</td>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.date_joined | date:'medium' }}</td>
+                <td>{{ user.is_superuser ? 'Sí' : 'No' }}</td>
+                <td>
+                  <button class="edit-btn" (click)="editUser(user)">Editar</button>
+                  <button class="delete-btn" (click)="deleteUser(user)">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button (click)="prevPageUsers()" [disabled]="currentPageUsers === 1">&lt;</button>
+          <ng-container *ngFor="let page of pageRangeUsers(); let i = index">
+            <button 
+              *ngIf="page !== '...'"
+              (click)="goToPageUsers(page)" 
+              [class.active]="currentPageUsers === page">
+              {{ page }}
+            </button>
+            <span *ngIf="page === '...'">{{ page }}</span>
+          </ng-container>
+          <button (click)="nextPageUsers()" [disabled]="currentPageUsers === totalPagesUsers">&gt;</button>
+        </div>
+        <div class="action-buttons">
+          <button class="add-btn">Añadir Usuario</button>
+        </div>
+      </section>
     </div>
   </main>
 </div>
-  

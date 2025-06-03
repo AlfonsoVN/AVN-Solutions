@@ -1,8 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AdminService } from '../services/admin.service';
-import { Observable } from 'rxjs';
-import { HttpHeaders } from '@angular/common/http';
 
 interface User {
   id: number;
@@ -23,9 +21,12 @@ interface User {
 })
 export class AdminComponent implements OnInit {
   dangerousQueries: any[] = [];
-  authService: any;
-  http: any;
   users: User[] = [];
+  currentPageQueries = 1;
+  currentPageUsers = 1;
+  itemsPerPage = 8;
+  @ViewChild('dangerousQueries') dangerousQueriesSection!: ElementRef;
+  @ViewChild('userManagement') userManagementSection!: ElementRef;
 
   constructor(private adminService: AdminService) {}
 
@@ -42,19 +43,10 @@ export class AdminComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al obtener consultas peligrosas:', error);
-        // Aquí puedes manejar el error, por ejemplo, mostrando un mensaje al usuario
       }
     });
   }
-  
 
-  getDangerousQueries(): Observable<any> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getToken()}`
-    });
-    return this.http.get('/api/dangerous-queries/', { headers });
-  }
-  
   loadUsers() {
     console.log('Cargando usuarios...');
     this.adminService.getUsers().subscribe({
@@ -67,15 +59,102 @@ export class AdminComponent implements OnInit {
       }
     });
   }
-  
 
-  editUser(user: any) {
-    // Implementa la lógica para editar un usuario
-    console.log('Editar usuario:', user);
+  get paginatedUsers() {
+    const startIndex = (this.currentPageUsers - 1) * this.itemsPerPage;
+    return this.users.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+  
+  get totalPagesUsers() {
+    return Math.ceil(this.users.length / this.itemsPerPage);
+  }
+  
+  get paginatedQueries() {
+    const startIndex = (this.currentPageQueries - 1) * this.itemsPerPage;
+    return this.dangerousQueries.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+  
+  get totalPagesQueries() {
+    return Math.ceil(this.dangerousQueries.length / this.itemsPerPage);
+  }
+  
+  pageRangeQueries(): (number | string)[] {
+    return this.generatePageRange(this.currentPageQueries, this.totalPagesQueries);
   }
 
-  deleteUser(user: any) {
-    // Implementa la lógica para eliminar un usuario
+  pageRangeUsers(): (number | string)[] {
+    return this.generatePageRange(this.currentPageUsers, this.totalPagesUsers);
+  }
+
+  generatePageRange(currentPage: number, totalPages: number): (number | string)[] {
+    const range: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        range.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        range.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        range.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        range.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return range;
+  }
+
+  prevPageQueries() {
+    if (this.currentPageQueries > 1) {
+      this.currentPageQueries--;
+    }
+  }
+
+  nextPageQueries() {
+    if (this.currentPageQueries < this.totalPagesQueries) {
+      this.currentPageQueries++;
+    }
+  }
+
+  goToPageQueries(page: number | string) {
+    if (typeof page === 'number' && page >= 1 && page <= this.totalPagesQueries) {
+      this.currentPageQueries = page;
+    }
+  }
+
+  prevPageUsers() {
+    if (this.currentPageUsers > 1) {
+      this.currentPageUsers--;
+    }
+  }
+
+  nextPageUsers() {
+    if (this.currentPageUsers < this.totalPagesUsers) {
+      this.currentPageUsers++;
+    }
+  }
+
+  goToPageUsers(page: number | string) {
+    if (typeof page === 'number' && page >= 1 && page <= this.totalPagesUsers) {
+      this.currentPageUsers = page;
+    }
+  }
+
+  editUser(user: User) {
+    console.log('Editar usuario:', user);
+    // Implement edit user logic
+  }
+
+  deleteUser(user: User) {
     console.log('Eliminar usuario:', user);
+    // Implement delete user logic
+  }
+
+  scrollTo(elementId: string, event: Event) {
+    event.preventDefault();
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 }
