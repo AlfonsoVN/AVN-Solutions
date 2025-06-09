@@ -34,6 +34,7 @@ from .groq_service import GroqService
 import groq
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session
+  # Ajusta el path según dónde esté
 
 from datetime import datetime, date
 from decimal import Decimal
@@ -81,43 +82,46 @@ def api_root(request):
     })
 
 
-@api_view(['POST'])
-@permission_classes([IsAdminUser])
-def add_user(request):
-    print("Received data:", request.data)  # Log para depuración
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    print("Serializer errors:", serializer.errors)  # Log para depuración
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-@api_view(['PUT'])
-@permission_classes([IsAdminUser])
-def update_user(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = UserSerializer(user, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])  # o IsAdminUser si lo prefieres
+def users_handler(request):
+    if request.method == 'GET':
+        users = User.objects.all().order_by('-date_joined')
+        serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['DELETE'])
-@permission_classes([IsAdminUser])
-def delete_user(request, user_id):
+    elif request.method == 'POST':
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def user_detail_handler(request, user_id):
     try:
         user = User.objects.get(id=user_id)
-        user.delete()
-        return Response({'message': 'Usuario eliminado correctamente'})
     except User.DoesNotExist:
-        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
-    
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+
+    if request.method == 'PUT':
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        user.delete()
+        return Response({'message': 'Usuario eliminado'})
+
+
+
+
+
+  
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -633,25 +637,7 @@ def get_dangerous_queries(request):
     serializer = DangerousQuerySerializer(queries, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-@permission_classes([CanViewDangerousQueries])
-def get_users(request):
-    print("Solicitud recibida para obtener usuarios")
-    users = User.objects.all().order_by('-date_joined')
-    print(f"Número de usuarios encontrados: {len(users)}")
-    user_data = [
-        {
-            'id': user.id,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'date_joined': user.date_joined,
-            'is_superuser': user.is_superuser
-        }
-        for user in users
-    ]
-    print("Enviando respuesta con datos de usuarios")
-    return Response(user_data)
+
 
 import sqlite3
 

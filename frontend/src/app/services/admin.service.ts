@@ -20,8 +20,10 @@ export class AdminService {
   }
   
   getUsers(): Observable<any> {
+    const token = this.authService.getToken();
+    console.log('Token para getUsers:', token);  // <--- log para depurar
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getToken()}`
+      'Authorization': `Bearer ${token}`
     });
     return this.http.get('http://localhost:8000/api/users/', { headers });
   }

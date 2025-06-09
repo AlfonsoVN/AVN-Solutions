@@ -22,11 +22,9 @@ urlpatterns = [
     path('chat_view/', views.chat_view, name='chat_view'),
     path('execute_dangerous_query/', views.execute_dangerous_query, name='execute_dangerous_query'),
     path('dangerous-queries/', views.get_dangerous_queries, name='get_dangerous_queries'),
-    path('users/', views.get_users, name='get_users'),
     path('test-database-query/', views.test_database_query, name='test_database_query'),
-    path('users/', views.add_user, name='add_user'),
-    path('users/<int:user_id>/', views.update_user, name='update_user'),
-    path('users/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('users/', views.users_handler, name='users_handler'),
+    path('users/<int:user_id>/', views.user_detail_handler, name='user_detail_handler'),
 
 ]
 

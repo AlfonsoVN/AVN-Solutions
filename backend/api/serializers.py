@@ -20,12 +20,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_superuser', 'password']
+        fields = ['id', 'email', 'first_name', 'last_name', 'is_superuser', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
+        if not validated_data.get('username'):
+            validated_data['username'] = validated_data['email']
         user = User.objects.create_user(**validated_data)
         return user
+
 
     def update(self, instance, validated_data):
         if 'password' in validated_data:

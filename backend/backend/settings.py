@@ -161,7 +161,7 @@ CSRF_HEADER_NAME = "X-CSRFToken"
 # Seguridad en cookies de sesión
 SESSION_COOKIE_SECURE = False  # Cambiar a True en producción si usas HTTPS
 
-GROQ_API_KEY = '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'
+GROQ_API_KEY = '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'
 
 from datetime import timedelta
 
