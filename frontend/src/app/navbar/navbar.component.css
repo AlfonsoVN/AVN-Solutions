@@ -310,6 +310,17 @@ transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, border-co
   .notification.error {
     background-color: #f44336;
   }
+
+  .error {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+input.ng-touched.ng-invalid {
+  border: 1px solid red;
+}
+
   
   @keyframes slideDown {
     from {
